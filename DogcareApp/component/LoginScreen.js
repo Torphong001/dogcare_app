@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation, handleLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [userToken, setUserToken] = useState('');
 
-  const handleLogin = async () => {
+  const handleLoginPress = async () => {
     try {
       const response = await fetch('http://192.168.3.180/dogcare/login.php', {
         method: 'POST',
@@ -24,12 +23,11 @@ const LoginScreen = ({ navigation }) => {
       const result = await response.json();
 
       if (result.success) {
-        // บันทึกข้อมูลล็อคอินใน AsyncStorage
         await AsyncStorage.setItem('userToken', result.token);
-        setUserToken(result.token); // อัปเดตสถานะของ userToken
-        // แสดงการแจ้งเตือน
+        handleLogin(result.token); // Call handleLogin to update userToken
         Alert.alert('Login Successful', `Your token is: ${result.token}`);
-        navigation.navigate('Home');
+        console.log('Token:', result.token);
+        navigation.navigate('Breed');
       } else {
         Alert.alert('Error', result.message || 'Username or Password is incorrect');
       }
@@ -55,7 +53,7 @@ const LoginScreen = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={handleLoginPress} />
 
       <Button
         title="Register"

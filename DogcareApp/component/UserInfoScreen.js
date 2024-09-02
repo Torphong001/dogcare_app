@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Image } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@expo/vector-icons'; // ใช้ FontAwesome สำหรับไอคอน user
 
 const UserInfoScreen = ({ navigation }) => {
   const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' });
@@ -29,6 +30,9 @@ const UserInfoScreen = ({ navigation }) => {
             setUserInfo({
               firstName: response.data.firstname,
               lastName: response.data.lastname,
+              tel: response.data.tel,
+              line_id: response.data.line_id,
+              picture: response.data.picture,
             });
           }
         } else {
@@ -55,8 +59,15 @@ const UserInfoScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {token ? <Text style={styles.tokenText}>Token: {token}</Text> : null}
+      {userInfo.picture ? (
+        <Image source={{ uri: userInfo.picture }} style={styles.image} />
+      ) : (
+        <FontAwesome name="user" size={100} color="gray" />
+      )}
       <Text style={styles.text}>First Name: {userInfo.firstName}</Text>
       <Text style={styles.text}>Last Name: {userInfo.lastName}</Text>
+      <Text style={styles.text}>Tel: {userInfo.tel}</Text>
+      <Text style={styles.text}>Line ID: {userInfo.line_id}</Text>
       <Button title="Go to Home" onPress={() => navigation.navigate('Home')} />
     </View>
   );
@@ -76,6 +87,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     color: 'gray',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
   },
 });
 

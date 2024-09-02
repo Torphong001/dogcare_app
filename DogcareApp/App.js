@@ -2,68 +2,75 @@ import React, { useState, useEffect } from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/Ionicons';
 import LoginScreen from './component/LoginScreen';
 import StepRegisterScreen1 from './component/StepRegisterScreen1';
 import StepRegisterScreen2 from './component/StepRegisterScreen2';
 import UserInfoScreen from './component/UserInfoScreen';
 import BreedScreen from './component/BreedScreen';
+import HomeScreen from './component/HomeScreen'; // Import HomeScreen
 
-const HomeScreen = ({ navigation, userToken }) => {
-  return (
-    <View style={styles.container}>
-      <Button
-        title="เข้าสู่ระบบ"
-        onPress={() => navigation.navigate('Login')}
-      />
-      {userToken ? <Text style={styles.tokenText}>Token: {userToken}</Text> : null}
-    </View>
-  );
-};
-
-const Drawer = createDrawerNavigator();
+const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const DrawerNavigator = ({ userToken, setUserToken }) => {
-  return (
-    <Drawer.Navigator
-      initialRouteName="Home"
-      screenOptions={{
-        drawerStyle: {
-          backgroundColor: '#FF9090',
-        },
-        drawerActiveTintColor: '#ffffff',
-        drawerInactiveTintColor: '#000000',
+const LogoutScreen = ({ setUserToken }) => (
+  <View style={styles.container}>
+    <Button
+      title="ออกจากระบบ"
+      onPress={async () => {
+        await AsyncStorage.removeItem('userToken');
+        setUserToken(null);
       }}
+    />
+  </View>
+);
+
+const TabNavigator = ({ userToken, setUserToken }) => {
+  return (
+    <Tab.Navigator
+      initialRouteName="Breed"
+      key={userToken}  // ใช้ userToken เป็น key เพื่อบังคับให้รีเรนเดอร์
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = 'home';
+          } else if (route.name === 'Login') {
+            iconName = 'log-in';
+          } else if (route.name === 'Logout') {
+            iconName = 'log-out';
+          } else if (route.name === 'UserInfo') {
+            iconName = 'person';
+          } else if (route.name === 'Breed') {
+            iconName = 'paw';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#FF9090',
+        tabBarInactiveTintColor: '#000000',
+      })}
     >
-      <Drawer.Screen name="Home">
+      <Tab.Screen name="Breed" component={BreedScreen} />
+      <Tab.Screen name="Home">
         {props => <HomeScreen {...props} userToken={userToken} />}
-      </Drawer.Screen>
+      </Tab.Screen>
       {userToken ? (
         <>
-        <Drawer.Screen
-          name="Logout"
-          component={() => (
-            <View style={styles.container}>
-              <Button
-                title="ออกจากระบบ"
-                onPress={async () => {
-                  await AsyncStorage.removeItem('userToken'); // เคลียร์ userToken จาก AsyncStorage
-                  setUserToken(null); // เคลียร์ userToken จาก state
-                }}
-              />
-            </View>
-          )}
-          options={{ title: 'Logout' }}
-        />
-        <Drawer.Screen name="UserInfo" component={UserInfoScreen} />
+          <Tab.Screen name="Logout">
+            {props => <LogoutScreen {...props} setUserToken={setUserToken} />}
+          </Tab.Screen>
+          <Tab.Screen name="UserInfo" component={UserInfoScreen} />
         </>
       ) : (
-        <Drawer.Screen name="Login" component={LoginScreen} />
+        <Tab.Screen name="Login">
+          {props => <LoginScreen {...props} handleLogin={setUserToken} />}
+        </Tab.Screen>
       )}
-      <Drawer.Screen name="Breed" component={BreedScreen} />
-    </Drawer.Navigator>
+    </Tab.Navigator>
   );
 };
 
@@ -78,33 +85,27 @@ const App = () => {
       }
     };
 
-    loadUserToken(); // โหลด token ที่เก็บไว้เมื่อแอปเริ่มทำงาน
+    loadUserToken();
   }, []);
-
-  const handleLogin = async (token) => {
-    await AsyncStorage.setItem('userToken', token); // บันทึก token ลงใน AsyncStorage
-    setUserToken(token); // บันทึก token ลงใน state
-  };
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
-          name="Drawer"
+          name="Tab"
           options={{ headerShown: false }}
         >
           {props => (
-            <DrawerNavigator
+            <TabNavigator
               {...props}
               userToken={userToken}
               setUserToken={setUserToken}
             />
           )}
         </Stack.Screen>
-        {/* Pass handleLogin to LoginScreen */}
         <Stack.Screen name="Login">
           {props => (
-            <LoginScreen {...props} handleLogin={handleLogin} />
+            <LoginScreen {...props} handleLogin={setUserToken} />
           )}
         </Stack.Screen>
         <Stack.Screen name="StepRegister1" component={StepRegisterScreen1} />
@@ -119,11 +120,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  tokenText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#333333',
   },
 });
 

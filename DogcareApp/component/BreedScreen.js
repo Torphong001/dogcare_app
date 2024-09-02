@@ -88,6 +88,8 @@ const BreedScreen = () => {
                 <Text style={styles.modalText}>{selectedBreed.charac}</Text>
                 <Text style={styles.modalBreedName}>ข้อเสีย</Text>
                 <Text style={styles.modalText}> {renderWithLineBreaks2(selectedBreed.problem)}</Text>
+                <Text style={styles.modalBreedName}>อารหารการกิน</Text>
+                <Text style={styles.modalText}>{selectedBreed.Nutrition}</Text>
                 <Text style={styles.modalBreedName}>ประวัติความเป็นมาของสุนัขพันธุ์</Text>
                 <Text style={styles.modalText}> {selectedBreed.record}</Text>
               </ScrollView>
