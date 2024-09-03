@@ -11,29 +11,18 @@ import StepRegisterScreen2 from './component/StepRegisterScreen2';
 import UserInfoScreen from './component/UserInfoScreen';
 import BreedScreen from './component/BreedScreen';
 import SearchScreen from './component/SearchScreen';
-import MypetScreen from './component/MypetScreen'; // Import HomeScreen
-import AddPetScreen from './component/AddPetScreen'; // Import HomeScreen
+import MypetScreen from './component/MypetScreen';
+import AddPetScreen from './component/AddPetScreen';
+import MyPetInfo from './component/MyPetInfo';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-
-const LogoutScreen = ({ setUserToken }) => (
-  <View style={styles.container}>
-    <Button
-      title="ออกจากระบบ"
-      onPress={async () => {
-        await AsyncStorage.removeItem('userToken');
-        setUserToken(null);
-      }}
-    />
-  </View>
-);
 
 const TabNavigator = ({ userToken, setUserToken }) => {
   return (
     <Tab.Navigator
       initialRouteName="Breed"
-      key={userToken}  // ใช้ userToken เป็น key เพื่อบังคับให้รีเรนเดอร์
+      key={userToken}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
@@ -44,9 +33,7 @@ const TabNavigator = ({ userToken, setUserToken }) => {
             iconName = 'log-in';
           } else if (route.name === 'UserInfo') {
             iconName = 'person';
-          } else if (route.name === 'Breed') {
-            iconName = 'paw';
-          } else if (route.name === 'Mypet') {
+          } else if (route.name === 'Breed' || route.name === 'Mypet') {
             iconName = 'paw';
           }
           return <Icon name={iconName} size={size} color={color} />;
@@ -59,12 +46,12 @@ const TabNavigator = ({ userToken, setUserToken }) => {
       <Tab.Screen name="Search">
         {props => <SearchScreen {...props} userToken={userToken} />}
       </Tab.Screen>
-      
+
       {userToken ? (
         <>
           <Tab.Screen name="Mypet">
-        {props => <MypetScreen {...props} userToken={userToken} />}
-      </Tab.Screen>
+            {props => <MypetScreen {...props} userToken={userToken} />}
+          </Tab.Screen>
           <Tab.Screen name="UserInfo">
             {props => <UserInfoScreen {...props} setUserToken={setUserToken} />}
           </Tab.Screen>
@@ -77,7 +64,6 @@ const TabNavigator = ({ userToken, setUserToken }) => {
     </Tab.Navigator>
   );
 };
-
 
 const App = () => {
   const [userToken, setUserToken] = useState(null);
@@ -116,12 +102,10 @@ const App = () => {
         <Stack.Screen name="StepRegister1" component={StepRegisterScreen1} />
         <Stack.Screen name="StepRegister2" component={StepRegisterScreen2} />
         <Stack.Screen name="AddPetScreen">
-        
-  {props => <AddPetScreen {...props} userToken={userToken} />}
-</Stack.Screen>
-
-  <Stack.Screen name="MypetScreen" component={MypetScreen} />
-
+          {props => <AddPetScreen {...props} userToken={userToken} />}
+        </Stack.Screen>
+        <Stack.Screen name="MypetScreen" component={MypetScreen} />
+        <Stack.Screen name="MyPetInfo" component={MyPetInfo} />
       </Stack.Navigator>
     </NavigationContainer>
   );
