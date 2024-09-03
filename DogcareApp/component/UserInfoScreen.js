@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome } from '@expo/vector-icons'; // ใช้ FontAwesome สำหรับไอคอน user
+import { FontAwesome } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window'); // Get screen dimensions
 
 const UserInfoScreen = ({ navigation, setUserToken }) => {
   const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' });
@@ -15,7 +17,6 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
       try {
         const storedToken = await AsyncStorage.getItem('userToken');
         setToken(storedToken); // Set token state
-        console.log('Token:', storedToken); // Debug: Check if token is retrieved
 
         if (storedToken) {
           const response = await axios.get('http://192.168.3.180/dogcare/userinfo.php', {
@@ -24,7 +25,6 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             },
           });
 
-          console.log('Response:', response.data); // Debug: Check the response
           if (response.data.error) {
             console.error(response.data.error);
           } else {
@@ -72,7 +72,6 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             },
           }
         );
-        console.log('Update Response:', response.data); // Debug: Check the update response
         setIsEditing(false); // Switch back to non-editing mode after saving
       } catch (error) {
         console.error('Failed to update user info:', error);
@@ -91,8 +90,8 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
   }
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.innerContainer}>
         <TouchableOpacity
           style={styles.editButton}
           onPress={handleEditSave}
@@ -109,6 +108,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           <FontAwesome name="user" size={100} color="gray" />
         )}
         <View style={styles.infoContainer}>
+          <Text style={styles.label}>ชื่อ</Text>
           <TextInput
             style={[styles.input, isEditing && styles.inputEditing]}
             value={userInfo.firstName}
@@ -116,6 +116,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             placeholder="ชื่อ"
             onChangeText={(text) => setUserInfo({ ...userInfo, firstName: text })}
           />
+          <Text style={styles.label}>นามสกุล</Text>
           <TextInput
             style={[styles.input, isEditing && styles.inputEditing]}
             value={userInfo.lastName}
@@ -123,6 +124,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             placeholder="นามสกุล"
             onChangeText={(text) => setUserInfo({ ...userInfo, lastName: text })}
           />
+          <Text style={styles.label}>เบอร์โทรศัพท์</Text>
           <TextInput
             style={[styles.input, isEditing && styles.inputEditing]}
             value={userInfo.tel}
@@ -130,6 +132,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             placeholder="เบอร์โทรศัพท์"
             onChangeText={(text) => setUserInfo({ ...userInfo, tel: text })}
           />
+          <Text style={styles.label}>ไอดีไลน์</Text>
           <TextInput
             style={[styles.input, isEditing && styles.inputEditing]}
             value={userInfo.line_id}
@@ -147,46 +150,47 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
     backgroundColor: '#f7f7f7',
   },
-  container: {
-    width: '100%',
-    backgroundColor: '#ffffff', // White background color for the box
+  innerContainer: {
+    width: width * 0.9, // Container width as a percentage of screen width
+    backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 20,
-    borderColor: '#ff7f7f', // Border color set to #ff7f7f
-    borderWidth: 5, // Adjust border width as needed
+    borderColor: '#ff7f7f',
+    borderWidth: 3,
     alignItems: 'center',
-    position: 'relative', // Position relative to place the edit button
+    elevation: 5,
   },
   editButton: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#ff7f7f', // Button background color
-    borderRadius: 20, // Circular shape
+    backgroundColor: '#ff7f7f',
+    borderRadius: 20,
     padding: 10,
   },
   logoutButton: {
-    backgroundColor: '#ff7f7f', // Background color for the logout button
-    padding: 10,
-    borderRadius: 20, // Rounded corners
-    marginTop: 20, // Space between input fields and logout button
+    backgroundColor: '#ff7f7f',
+    padding: 15,
+    borderRadius: 20,
+    marginTop: 20,
+    width: '100%',
   },
   logoutButtonText: {
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
   },
-  nameText: {
-    fontSize: 18,
+  label: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
+    color: '#333',
   },
   infoContainer: {
     width: '100%',
@@ -199,10 +203,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: '100%',
     borderWidth: 2,
-    borderColor: '#ff7f7f', // Border color for text boxes
+    borderColor: '#ff7f7f',
   },
   inputEditing: {
-    backgroundColor: '#ffffff', // White background when editing
+    backgroundColor: '#ffffff',
   },
   image: {
     width: 100,
@@ -210,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 10,
     borderWidth: 5,
-    borderColor: '#000000',
+    borderColor: '#ff7f7f',
   },
 });
 

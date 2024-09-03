@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './component/LoginScreen';
 import StepRegisterScreen1 from './component/StepRegisterScreen1';
 import StepRegisterScreen2 from './component/StepRegisterScreen2';
@@ -42,28 +41,48 @@ const TabNavigator = ({ userToken, setUserToken }) => {
         tabBarInactiveTintColor: '#000000',
       })}
     >
-      <Tab.Screen name="Breed" component={BreedScreen} />
-      <Tab.Screen name="Search">
+      <Tab.Screen
+        name="Breed"
+        component={BreedScreen}
+        options={{ tabBarLabel: 'พันธุ์สุนัข' }} // Thai label for BreedScreen
+      />
+      <Tab.Screen
+        name="Search"
+        options={{ tabBarLabel: 'ค้นหา' }} // Thai label for SearchScreen
+      >
         {props => <SearchScreen {...props} userToken={userToken} />}
       </Tab.Screen>
 
       {userToken ? (
         <>
-          <Tab.Screen name="Mypet">
+          <Tab.Screen
+            name="Mypet"
+            options={{ tabBarLabel: 'สัตว์เลี้ยงของฉัน' }} // Thai label for MypetScreen
+          >
             {props => <MypetScreen {...props} userToken={userToken} />}
           </Tab.Screen>
-          <Tab.Screen name="UserInfo">
+          <Tab.Screen
+            name="UserInfo"
+            options={{ tabBarLabel: 'ข้อมูลผู้ใช้' }} // Thai label for UserInfoScreen
+          >
             {props => <UserInfoScreen {...props} setUserToken={setUserToken} />}
           </Tab.Screen>
         </>
       ) : (
-        <Tab.Screen name="Login">
+        <Tab.Screen
+          name="Login"
+          options={{ 
+            tabBarLabel: 'หน้าล็อคอิน', // Thai label for LoginScreen
+            label: null,
+          }}
+        >
           {props => <LoginScreen {...props} handleLogin={setUserToken} />}
         </Tab.Screen>
       )}
     </Tab.Navigator>
   );
 };
+
 
 const App = () => {
   const [userToken, setUserToken] = useState(null);
@@ -110,13 +129,5 @@ const App = () => {
     </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default App;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation, handleLogin }) => {
@@ -39,27 +39,32 @@ const LoginScreen = ({ navigation, handleLogin }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>เข้าสู่ระบบ</Text>
       <TextInput
         style={styles.input}
         placeholder="Username"
+        placeholderTextColor="#aaa"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor="#aaa"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLoginPress} />
+      <TouchableOpacity style={styles.button} onPress={handleLoginPress}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
 
-      <Button
-        title="Register"
-        onPress={() => navigation.navigate('StepRegister1')}
+      <TouchableOpacity
         style={styles.registerButton}
-      />
+        onPress={() => navigation.navigate('StepRegister1')}
+      >
+        <Text style={styles.registerButtonText}>Register</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -69,26 +74,44 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#f7f7f7', // Light background color for contrast
   },
   title: {
-    fontSize: 24,
-    marginBottom: 16,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 24,
     textAlign: 'center',
+    color: '#ff7f7f', // Theme color
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  tokenText: {
-    marginTop: 20,
+    height: 50,
+    borderColor: '#ff7f7f', // Theme color
+    borderWidth: 2,
+    borderRadius: 8,
+    marginBottom: 16,
+    paddingHorizontal: 16,
     fontSize: 16,
-    textAlign: 'center',
+    color: '#333',
+  },
+  button: {
+    backgroundColor: '#ff7f7f', // Theme color
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   registerButton: {
-    marginTop: 10,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: '#ff7f7f', // Theme color
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

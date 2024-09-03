@@ -1,23 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, ScrollView, TextInput, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, ScrollView, TextInput, TouchableWithoutFeedback, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const BreedScreen = () => {
   const [breeds, setBreeds] = useState([]);
-  const [filteredBreeds, setFilteredBreeds] = useState([]); // State to hold the filtered list
+  const [filteredBreeds, setFilteredBreeds] = useState([]);
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(''); // State to hold the search query
+  const [searchQuery, setSearchQuery] = useState('');
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Animation value for modal fade in/out
 
   useEffect(() => {
     fetch('http://192.168.3.180/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         setBreeds(data);
-        setFilteredBreeds(data); // Initially, show all breeds
+        setFilteredBreeds(data);
       })
       .catch(error => console.error('Error fetching data:', error));
   }, []);
+
+  useEffect(() => {
+    if (modalVisible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [modalVisible]);
 
   const openModal = (breed) => {
     setSelectedBreed(breed);
@@ -65,17 +82,17 @@ const BreedScreen = () => {
 
       {selectedBreed && (
         <Modal
-          animationType="slide"
           transparent={true}
           visible={modalVisible}
           onRequestClose={closeModal}
+          animationType="none"
         >
-          <View style={styles.modalContainer}>
+          <Animated.View style={[styles.modalContainer, { opacity: fadeAnim }]}>
             <View style={styles.modalContent}>
               <TouchableWithoutFeedback onPress={closeModal}>
                 <Ionicons name="close" size={30} color="black" style={styles.closeButton} />
               </TouchableWithoutFeedback>
-              <ScrollView>
+              <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.modalHeader}>
                   <Image source={{ uri: selectedBreed.picture }} style={styles.modalImage} />
                   <View style={styles.modalTextContainer}>
@@ -83,21 +100,23 @@ const BreedScreen = () => {
                     <Text style={styles.modalRegion}>{selectedBreed.region}</Text>
                   </View>
                 </View>
-                <Text style={styles.modalText}>น้ำหนัก: {selectedBreed.weight} กก.   ส่วนสูง: {selectedBreed.height} นิ้ว</Text>
-                <Text style={styles.modalText}>อายุขัย: {selectedBreed.lifespan} ปี</Text>
-                <Text style={styles.modalBreedName}>ลักษณะของสุนัขพันธุ์{selectedBreed.breed_name}</Text>
-                <Text style={styles.modalText}>{selectedBreed.nature}</Text>
-                <Text style={styles.modalBreedName}>ลักษณะนิสัยของสุนัขพันธุ์{selectedBreed.breed_name}</Text>
-                <Text style={styles.modalText}>{selectedBreed.charac}</Text>
-                <Text style={styles.modalBreedName}>ข้อเสีย</Text>
-                <Text style={styles.modalText}>{selectedBreed.problem}</Text>
-                <Text style={styles.modalBreedName}>อารหารการกิน</Text>
-                <Text style={styles.modalText}>{selectedBreed.Nutrition}</Text>
-                <Text style={styles.modalBreedName}>ประวัติความเป็นมาของสุนัขพันธุ์</Text>
-                <Text style={styles.modalText}>{selectedBreed.record}</Text>
+                <View style={styles.modalDetails}>
+                  <Text style={styles.modalText}>น้ำหนัก: {selectedBreed.weight} กก.   ส่วนสูง: {selectedBreed.height} นิ้ว</Text>
+                  <Text style={styles.modalText}>อายุขัย: {selectedBreed.lifespan} ปี</Text>
+                  <Text style={styles.modalBreedName}>ลักษณะของสุนัขพันธุ์ {selectedBreed.breed_name}</Text>
+                  <Text style={styles.modalText}>{selectedBreed.nature}</Text>
+                  <Text style={styles.modalBreedName}>ลักษณะนิสัยของสุนัขพันธุ์ {selectedBreed.breed_name}</Text>
+                  <Text style={styles.modalText}>{selectedBreed.charac}</Text>
+                  <Text style={styles.modalBreedName}>ข้อเสีย</Text>
+                  <Text style={styles.modalText}>{selectedBreed.problem}</Text>
+                  <Text style={styles.modalBreedName}>อาหารการกิน</Text>
+                  <Text style={styles.modalText}>{selectedBreed.Nutrition}</Text>
+                  <Text style={styles.modalBreedName}>ประวัติความเป็นมาของสุนัขพันธุ์</Text>
+                  <Text style={styles.modalText}>{selectedBreed.record}</Text>
+                </View>
               </ScrollView>
             </View>
-          </View>
+          </Animated.View>
         </Modal>
       )}
     </View>
@@ -133,6 +152,7 @@ const styles = StyleSheet.create({
   image: {
     width: 100,
     height: 100,
+    borderRadius: 10,
   },
   textContainer: {
     marginLeft: 15,
@@ -155,15 +175,15 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    height: '90%',
+    maxHeight: '90%',
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 10,
     position: 'relative',
   },
   closeButton: {
@@ -178,8 +198,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     borderRadius: 10,
   },
   modalTextContainer: {
@@ -187,16 +207,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalBreedName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
   },
   modalRegion: {
-    fontSize: 16,
+    fontSize: 18,
     color: 'gray',
   },
   modalText: {
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
+  },
+  scrollContainer: {
+    paddingBottom: 20,
+  },
+  modalDetails: {
+    marginBottom: 20,
   },
 });
 
