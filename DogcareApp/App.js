@@ -10,7 +10,9 @@ import StepRegisterScreen1 from './component/StepRegisterScreen1';
 import StepRegisterScreen2 from './component/StepRegisterScreen2';
 import UserInfoScreen from './component/UserInfoScreen';
 import BreedScreen from './component/BreedScreen';
-import HomeScreen from './component/HomeScreen'; // Import HomeScreen
+import SearchScreen from './component/SearchScreen';
+import MypetScreen from './component/MypetScreen'; // Import HomeScreen
+import AddPetScreen from './component/AddPetScreen'; // Import HomeScreen
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -36,18 +38,17 @@ const TabNavigator = ({ userToken, setUserToken }) => {
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
-            iconName = 'home';
+          if (route.name === 'Search') {
+            iconName = 'search';
           } else if (route.name === 'Login') {
             iconName = 'log-in';
-          } else if (route.name === 'Logout') {
-            iconName = 'log-out';
           } else if (route.name === 'UserInfo') {
             iconName = 'person';
           } else if (route.name === 'Breed') {
             iconName = 'paw';
+          } else if (route.name === 'Mypet') {
+            iconName = 'paw';
           }
-
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#FF9090',
@@ -55,15 +56,18 @@ const TabNavigator = ({ userToken, setUserToken }) => {
       })}
     >
       <Tab.Screen name="Breed" component={BreedScreen} />
-      <Tab.Screen name="Home">
-        {props => <HomeScreen {...props} userToken={userToken} />}
+      <Tab.Screen name="Search">
+        {props => <SearchScreen {...props} userToken={userToken} />}
       </Tab.Screen>
+      
       {userToken ? (
         <>
-          <Tab.Screen name="Logout">
-            {props => <LogoutScreen {...props} setUserToken={setUserToken} />}
+          <Tab.Screen name="Mypet">
+        {props => <MypetScreen {...props} userToken={userToken} />}
+      </Tab.Screen>
+          <Tab.Screen name="UserInfo">
+            {props => <UserInfoScreen {...props} setUserToken={setUserToken} />}
           </Tab.Screen>
-          <Tab.Screen name="UserInfo" component={UserInfoScreen} />
         </>
       ) : (
         <Tab.Screen name="Login">
@@ -73,6 +77,7 @@ const TabNavigator = ({ userToken, setUserToken }) => {
     </Tab.Navigator>
   );
 };
+
 
 const App = () => {
   const [userToken, setUserToken] = useState(null);
@@ -110,6 +115,13 @@ const App = () => {
         </Stack.Screen>
         <Stack.Screen name="StepRegister1" component={StepRegisterScreen1} />
         <Stack.Screen name="StepRegister2" component={StepRegisterScreen2} />
+        <Stack.Screen name="AddPetScreen">
+        
+  {props => <AddPetScreen {...props} userToken={userToken} />}
+</Stack.Screen>
+
+  <Stack.Screen name="MypetScreen" component={MypetScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

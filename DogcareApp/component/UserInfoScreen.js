@@ -4,7 +4,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons'; // ใช้ FontAwesome สำหรับไอคอน user
 
-const UserInfoScreen = ({ navigation }) => {
+const UserInfoScreen = ({ navigation, setUserToken }) => {
   const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' });
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null); // Track token state
@@ -48,6 +48,12 @@ const UserInfoScreen = ({ navigation }) => {
     fetchUserInfo();
   }, []);
 
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    setUserToken(null);
+    navigation.navigate('Login'); // Navigate to Login screen after logout
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -58,7 +64,6 @@ const UserInfoScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {token ? <Text style={styles.tokenText}>Token: {token}</Text> : null}
       {userInfo.picture ? (
         <Image source={{ uri: userInfo.picture }} style={styles.image} />
       ) : (
@@ -68,7 +73,7 @@ const UserInfoScreen = ({ navigation }) => {
       <Text style={styles.text}>Last Name: {userInfo.lastName}</Text>
       <Text style={styles.text}>Tel: {userInfo.tel}</Text>
       <Text style={styles.text}>Line ID: {userInfo.line_id}</Text>
-      <Button title="Go to Home" onPress={() => navigation.navigate('Home')} />
+      <Button title="Logout" onPress={handleLogout} />
     </View>
   );
 };

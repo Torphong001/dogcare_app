@@ -25,7 +25,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
       if (result.success) {
         await AsyncStorage.setItem('userToken', result.token);
         handleLogin(result.token); // Call handleLogin to update userToken
-        Alert.alert('Login Successful', `Your token is: ${result.token}`);
+        Alert.alert('Login Successful');
         console.log('Token:', result.token);
         navigation.navigate('Breed');
       } else {

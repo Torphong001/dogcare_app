@@ -2,13 +2,10 @@
 import React from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 
-const HomeScreen = ({ navigation, userToken }) => {
+const SearchScreen = ({ navigation, userToken }) => {
   return (
     <View style={styles.container}>
-      <Button
-        title="เข้าสู่ระบบ"
-        onPress={() => navigation.navigate('Login')}
-      />
+      <Text style={styles.tokenText}>ค้นหาสายพันธุ์</Text>
       {userToken ? <Text style={styles.tokenText}>Token: {userToken}</Text> : null}
     </View>
   );
@@ -27,4 +24,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default SearchScreen;
