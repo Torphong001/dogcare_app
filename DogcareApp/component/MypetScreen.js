@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 
 const MypetScreen = ({ navigation, userToken }) => {
   const [userInfo, setUserInfo] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -29,8 +30,10 @@ const MypetScreen = ({ navigation, userToken }) => {
       }
     };
 
-    fetchUserInfo();
-  }, [userToken]);
+    if (isFocused) {
+      fetchUserInfo();
+    }
+  }, [isFocused, userToken]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
