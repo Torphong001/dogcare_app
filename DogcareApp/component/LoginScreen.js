@@ -81,11 +81,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 24,
     textAlign: 'center',
-    color: '#ff7f7f', // Theme color
+    color: '#FF9090', // Theme color
   },
   input: {
     height: 50,
-    borderColor: '#ff7f7f', // Theme color
+    borderColor: '#FF9090', // Theme color
     borderWidth: 2,
     borderRadius: 8,
     marginBottom: 16,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   button: {
-    backgroundColor: '#ff7f7f', // Theme color
+    backgroundColor: '#FF9090', // Theme color
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   registerButtonText: {
-    color: '#ff7f7f', // Theme color
+    color: '#FF9090', // Theme color
     fontSize: 16,
     fontWeight: 'bold',
   },

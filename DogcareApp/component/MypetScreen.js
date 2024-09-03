@@ -67,7 +67,7 @@ const MypetScreen = ({ navigation, userToken }) => {
               style={[styles.card, styles.addCard]}
               onPress={() => navigation.navigate('AddPetScreen')}
             >
-              <Ionicons name="add-circle-outline" size={50} color="gray" />
+              <Ionicons name="add-circle-outline" size={50} color="#FF9090" />
             </TouchableOpacity>
           ) : (
             renderItem({ item })

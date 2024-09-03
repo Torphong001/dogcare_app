@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 20,
-    borderColor: '#ff7f7f',
+    borderColor: '#FF9090',
     borderWidth: 3,
     alignItems: 'center',
     elevation: 5,
@@ -170,12 +170,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#ff7f7f',
+    backgroundColor: '#FF9090',
     borderRadius: 20,
     padding: 10,
   },
   logoutButton: {
-    backgroundColor: '#ff7f7f',
+    backgroundColor: '#FF9090',
     padding: 15,
     borderRadius: 20,
     marginTop: 20,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: '100%',
     borderWidth: 2,
-    borderColor: '#ff7f7f',
+    borderColor: '#FF9090',
   },
   inputEditing: {
     backgroundColor: '#ffffff',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 10,
     borderWidth: 5,
-    borderColor: '#ff7f7f',
+    borderColor: '#FF9090',
   },
 });
 

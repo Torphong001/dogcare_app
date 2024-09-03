@@ -89,7 +89,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
       if (response.ok && result.success) {
         Alert.alert('สำเร็จ', 'สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
-        navigation.navigate('MypetScreen');
+        navigation.navigate('Mypet');
       } else {
         Alert.alert('ข้อผิดพลาด', result.message || 'ไม่สามารถเพิ่มสัตว์เลี้ยงได้');
       }

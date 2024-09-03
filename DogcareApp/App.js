@@ -44,7 +44,14 @@ const TabNavigator = ({ userToken, setUserToken }) => {
       <Tab.Screen
         name="Breed"
         component={BreedScreen}
-        options={{ tabBarLabel: 'พันธุ์สุนัข' }} // Thai label for BreedScreen
+        options={{ 
+          tabBarLabel: 'ข้อมูลสุนัข',
+          title: 'ข้อมูลสุนัข',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }} // Thai label for BreedScreen
       />
       <Tab.Screen
         name="Search"
@@ -57,13 +64,27 @@ const TabNavigator = ({ userToken, setUserToken }) => {
         <>
           <Tab.Screen
             name="Mypet"
-            options={{ tabBarLabel: 'สัตว์เลี้ยงของฉัน' }} // Thai label for MypetScreen
+            options={{ 
+              tabBarLabel: 'สัตว์เลี้ยงของฉัน',
+              title: 'สัตว์เลี้ยงของฉัน',
+            headerTitleAlign: 'center', // Center the title
+            headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+            headerTintColor: '#fff', // 
+            headerTitleStyle: { fontWeight: 'bold' }
+            }} 
           >
             {props => <MypetScreen {...props} userToken={userToken} />}
           </Tab.Screen>
           <Tab.Screen
             name="UserInfo"
-            options={{ tabBarLabel: 'ข้อมูลผู้ใช้' }} // Thai label for UserInfoScreen
+            options={{ 
+              tabBarLabel: 'ข้อมูลผู้ใช้',
+              title: 'ข้อมูลผู้ใช้',
+            headerTitleAlign: 'center', // Center the title
+            headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+            headerTintColor: '#fff', // 
+            headerTitleStyle: { fontWeight: 'bold' }
+            }} // Thai label for UserInfoScreen
           >
             {props => <UserInfoScreen {...props} setUserToken={setUserToken} />}
           </Tab.Screen>
@@ -73,7 +94,10 @@ const TabNavigator = ({ userToken, setUserToken }) => {
           name="Login"
           options={{ 
             tabBarLabel: 'หน้าล็อคอิน', // Thai label for LoginScreen
-            label: null,
+            title: false,
+            headerTitleAlign: 'center', // Center the title
+            headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+            headerTintColor: '#fff', //
           }}
         >
           {props => <LoginScreen {...props} handleLogin={setUserToken} />}
@@ -113,18 +137,49 @@ const App = () => {
             />
           )}
         </Stack.Screen>
-        <Stack.Screen name="Login">
+        <Stack.Screen name="Login" >
           {props => (
             <LoginScreen {...props} handleLogin={setUserToken} />
           )}
         </Stack.Screen>
-        <Stack.Screen name="StepRegister1" component={StepRegisterScreen1} />
-        <Stack.Screen name="StepRegister2" component={StepRegisterScreen2} />
-        <Stack.Screen name="AddPetScreen">
+        <Stack.Screen name="StepRegister1" component={StepRegisterScreen1} 
+        options={{ 
+          tabBarLabel: 'สมัครสมาชิก',
+          title: 'สมัครสมาชิก',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }}/>
+        <Stack.Screen name="StepRegister2" component={StepRegisterScreen2} 
+        options={{ 
+          tabBarLabel: 'สมัครสมาชิก',
+          title: 'สมัครสมาชิก',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }}/>
+        <Stack.Screen name="AddPetScreen"
+        options={{ 
+          tabBarLabel: 'เพิ่มสุนัข',
+          title: 'เพิ่มสุนัข',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }}>
           {props => <AddPetScreen {...props} userToken={userToken} />}
         </Stack.Screen>
-        <Stack.Screen name="MypetScreen" component={MypetScreen} />
-        <Stack.Screen name="MyPetInfo" component={MyPetInfo} />
+        <Stack.Screen name="MyPetInfo" component={MyPetInfo} 
+        options={{ 
+          tabBarLabel: 'ข้อมูลสุนัข',
+          title: 'ข้อมูลสุนัข',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

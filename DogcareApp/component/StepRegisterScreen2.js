@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import StepRegisterScreen1 from './StepRegisterScreen1';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 const StepRegisterScreen2 = ({ route, navigation }) => {
   const { username, password } = route.params;
@@ -10,6 +9,11 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
   const [lineId, setLineId] = useState('');
 
   const handleRegister = async () => {
+    if (!firstName || !lastName || !phoneNumber || !lineId) {
+      Alert.alert(' ', 'โปรดกรอกข้อมูลให้ครบ');
+      return;
+    }
+
     try {
       const response = await fetch('http://192.168.3.180/dogcare/register.php', {
         method: 'POST',
@@ -26,7 +30,7 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
       const result = await response.json();
 
       if (result.success) {
-        Alert.alert('Registration Successful', 'You can now log in');
+        Alert.alert(' ', 'สมัครสมาชิกสําเร็จ');
         navigation.navigate('Login');
       } else {
         Alert.alert('Error', result.message || 'Registration failed');
@@ -43,28 +47,34 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="First Name"
+        placeholderTextColor="#aaa"
         value={firstName}
         onChangeText={setFirstName}
       />
       <TextInput
         style={styles.input}
         placeholder="Last Name"
+        placeholderTextColor="#aaa"
         value={lastName}
         onChangeText={setLastName}
       />
       <TextInput
         style={styles.input}
         placeholder="Phone Number"
+        placeholderTextColor="#aaa"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
       />
       <TextInput
         style={styles.input}
         placeholder="Line ID"
+        placeholderTextColor="#aaa"
         value={lineId}
         onChangeText={setLineId}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Register</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -74,18 +84,36 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#f7f7f7',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 16,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 24,
     textAlign: 'center',
+    color: '#FF9090',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+    height: 50,
+    borderColor: '#FF9090',
+    borderWidth: 2,
+    borderRadius: 8,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#333',
+  },
+  button: {
+    backgroundColor: '#FF9090',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
     marginBottom: 12,
-    paddingHorizontal: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
