@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import moment from 'moment';
-import { useFocusEffect } from '@react-navigation/native';
+import moment from 'moment'; // ใช้ library moment เพื่อช่วยในการจัดการวันเวลา
 
 const MyPetInfo = ({ route, navigation }) => {
   const { pet } = route.params;
@@ -11,19 +10,23 @@ const MyPetInfo = ({ route, navigation }) => {
   const [breedInfo, setBreedInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // ฟังก์ชันคำนวณอายุ
   const calculateAge = (birthDate) => {
     const birthMoment = moment(birthDate, 'YYYY-MM-DD');
     const currentMoment = moment();
+
     const years = currentMoment.diff(birthMoment, 'years');
     birthMoment.add(years, 'years');
+
     const months = currentMoment.diff(birthMoment, 'months');
+
     return `${years} ปี ${months} เดือน`;
   };
-
   const renderWithLineBreaks2 = (text) => {
     if (!text) {
-      return null;
+      return null; // หรืออาจจะ return ข้อความว่างเปล่า
     }
+  
     return text.split('|').map((line, index) => (
       <Text key={index} style={styles.modalText}>
         {line}
@@ -31,7 +34,8 @@ const MyPetInfo = ({ route, navigation }) => {
       </Text>
     ));
   };
-
+  
+  // ฟังก์ชันดึงข้อมูลจาก API
   const fetchBreedInfo = async () => {
     setLoading(true);
     console.log('fetching breed info for:', pet.breed_id);
@@ -48,13 +52,6 @@ const MyPetInfo = ({ route, navigation }) => {
       setModalVisible(true);
     }
   };
-
-  // Use useFocusEffect to fetch data when the screen gains focus
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchPets();
-    }, [])
-  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -81,7 +78,7 @@ const MyPetInfo = ({ route, navigation }) => {
         <Text style={styles.label}>อายุ:</Text>
         <Text style={styles.value}>{calculateAge(pet.pet_bd)}</Text>
 
-        <TouchableOpacity style={styles.moreButton} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity style={styles.moreButton} onPress={fetchBreedInfo}>
           <Text style={styles.moreButtonText}>ดูเพิ่มเติม</Text>
         </TouchableOpacity>
       </View>
@@ -116,11 +113,11 @@ const MyPetInfo = ({ route, navigation }) => {
                 <Text style={styles.modalBreedName}>ลักษณะนิสัยของสุนัขพันธุ์{breedInfo.breed_name}</Text>
                 <Text style={styles.modalText}>{breedInfo.charac}</Text>
                 <Text style={styles.modalBreedName}>ข้อเสีย</Text>
-                <Text style={styles.modalText}>{renderWithLineBreaks2(breedInfo.problem)}</Text>
+                <Text style={styles.modalText}> {renderWithLineBreaks2(breedInfo.problem)}</Text>
                 <Text style={styles.modalBreedName}>อารหารการกิน</Text>
                 <Text style={styles.modalText}>{breedInfo.Nutrition}</Text>
                 <Text style={styles.modalBreedName}>ประวัติความเป็นมาของสุนัขพันธุ์</Text>
-                <Text style={styles.modalText}>{breedInfo.record}</Text>
+                <Text style={styles.modalText}> {breedInfo.record}</Text>
               </ScrollView>
             ) : (
               <Text>ไม่พบข้อมูล</Text>
@@ -180,31 +177,20 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: 'flex-end',
   },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  modalTextContainer: {
-    flex: 1,
-  },
-  modalBreedName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalRegion: {
+  modalLabel: {
     fontSize: 16,
-    color: 'gray',
+    fontWeight: 'bold',
+    marginTop: 10,
   },
-  modalText: {
+  modalValue: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  modalImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 10,
+    marginBottom: 20,
   },
 });
 
