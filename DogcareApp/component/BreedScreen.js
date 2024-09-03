@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, ScrollView, TouchableWithoutFeedback } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Assuming you're using Expo; otherwise, install react-native-vector-icons
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, ScrollView, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const BreedScreen = () => {
   const [breeds, setBreeds] = useState([]);
+  const [filteredBreeds, setFilteredBreeds] = useState([]); // State to hold the filtered list
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // State to hold the search query
 
   useEffect(() => {
-    fetch('http://192.168.3.180/dogcare/breedinfo.php') // Replace with your actual API URL
+    fetch('http://192.168.3.180/dogcare/breedinfo.php')
       .then(response => response.json())
-      .then(data => setBreeds(data))
+      .then(data => {
+        setBreeds(data);
+        setFilteredBreeds(data); // Initially, show all breeds
+      })
       .catch(error => console.error('Error fetching data:', error));
   }, []);
 
@@ -24,6 +29,14 @@ const BreedScreen = () => {
     setSelectedBreed(null);
   };
 
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    const filteredData = breeds.filter(breed =>
+      breed.breed_name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredBreeds(filteredData);
+  };
+
   const renderBreed = ({ item }) => (
     <TouchableOpacity onPress={() => openModal(item)}>
       <View style={styles.card}>
@@ -35,31 +48,21 @@ const BreedScreen = () => {
       </View>
     </TouchableOpacity>
   );
-  const renderWithLineBreaks = (text) => {
-    return text.split(' ').map((word, index) => (
-      <Text key={index} style={styles.modalText}>
-        {word}
-      </Text>
-    ));
-  };
-  const renderWithLineBreaks2 = (text) => {
-    return text.split('|').map((line, index) => (
-      <Text key={index} style={styles.modalText}>
-        {line}
-        {index < text.split('|').length - 1 && <Text>{'\n'}</Text>}
-      </Text>
-    ));
-  };
-  
-  
+
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="ค้นหาสายพันธุ์สุนัข"
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
       <FlatList
-        data={breeds}
+        data={filteredBreeds}
         renderItem={renderBreed}
         keyExtractor={item => item.breed_id.toString()}
       />
-      
+
       {selectedBreed && (
         <Modal
           animationType="slide"
@@ -83,15 +86,15 @@ const BreedScreen = () => {
                 <Text style={styles.modalText}>น้ำหนัก: {selectedBreed.weight} กก.   ส่วนสูง: {selectedBreed.height} นิ้ว</Text>
                 <Text style={styles.modalText}>อายุขัย: {selectedBreed.lifespan} ปี</Text>
                 <Text style={styles.modalBreedName}>ลักษณะของสุนัขพันธุ์{selectedBreed.breed_name}</Text>
-                <Text style={styles.modalText}>{renderWithLineBreaks2(selectedBreed.nature)}</Text>
+                <Text style={styles.modalText}>{selectedBreed.nature}</Text>
                 <Text style={styles.modalBreedName}>ลักษณะนิสัยของสุนัขพันธุ์{selectedBreed.breed_name}</Text>
                 <Text style={styles.modalText}>{selectedBreed.charac}</Text>
                 <Text style={styles.modalBreedName}>ข้อเสีย</Text>
-                <Text style={styles.modalText}> {renderWithLineBreaks2(selectedBreed.problem)}</Text>
+                <Text style={styles.modalText}>{selectedBreed.problem}</Text>
                 <Text style={styles.modalBreedName}>อารหารการกิน</Text>
                 <Text style={styles.modalText}>{selectedBreed.Nutrition}</Text>
                 <Text style={styles.modalBreedName}>ประวัติความเป็นมาของสุนัขพันธุ์</Text>
-                <Text style={styles.modalText}> {selectedBreed.record}</Text>
+                <Text style={styles.modalText}>{selectedBreed.record}</Text>
               </ScrollView>
             </View>
           </View>
@@ -105,6 +108,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingLeft: 10,
+    marginBottom: 10,
   },
   card: {
     backgroundColor: '#fff',
@@ -140,11 +151,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '90%', // Nearly full-screen
-    height: '90%', // Nearly full-screen
+    width: '90%',
+    height: '90%',
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
