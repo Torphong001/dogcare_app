@@ -40,7 +40,7 @@ const MyPetInfo = ({ route, navigation }) => {
     setLoading(true);
     console.log('fetching breed info for:', pet.breed_id);
     try {
-      const response = await axios.post('http://192.168.3.180/dogcare/getbreedinfo.php', {
+      const response = await axios.post('http://192.168.3.148/dogcare/getbreedinfo.php', {
         breed_id: pet.breed_id,
       });
       setBreedInfo(response.data);

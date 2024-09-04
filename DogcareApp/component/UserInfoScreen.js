@@ -19,7 +19,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         setToken(storedToken); // Set token state
 
         if (storedToken) {
-          const response = await axios.get('http://192.168.3.180/dogcare/userinfo.php', {
+          const response = await axios.get('http://192.168.3.148/dogcare/userinfo.php', {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -59,7 +59,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
     if (isEditing) {
       try {
         const response = await axios.post(
-          'http://192.168.3.180/dogcare/edituserinfo.php',
+          'http://192.168.3.148/dogcare/edituserinfo.php',
           {
             firstName: userInfo.firstName,
             lastName: userInfo.lastName,
@@ -142,7 +142,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           />
         </View>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
+          <Text style={styles.logoutButtonText}>ออกจากระบบ</Text>
         </TouchableOpacity>
       </View>
     </View>

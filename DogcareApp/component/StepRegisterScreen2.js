@@ -15,7 +15,7 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.3.180/dogcare/register.php', {
+      const response = await fetch('http://192.168.3.148/dogcare/register.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,37 +43,37 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register - Step 2</Text>
+      <Text style={styles.title}>กรอกข้อมูลส่วนตัว</Text>
       <TextInput
         style={styles.input}
-        placeholder="First Name"
+        placeholder="ชื่อ"
         placeholderTextColor="#aaa"
         value={firstName}
         onChangeText={setFirstName}
       />
       <TextInput
         style={styles.input}
-        placeholder="Last Name"
+        placeholder="นามสกุุล"
         placeholderTextColor="#aaa"
         value={lastName}
         onChangeText={setLastName}
       />
       <TextInput
         style={styles.input}
-        placeholder="Phone Number"
+        placeholder="เบอร์โทรศัพท์"
         placeholderTextColor="#aaa"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
       />
       <TextInput
         style={styles.input}
-        placeholder="Line ID"
+        placeholder="ไอดีไลน์"
         placeholderTextColor="#aaa"
         value={lineId}
         onChangeText={setLineId}
       />
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+        <Text style={styles.buttonText}>สมัครสมาชิก</Text>
       </TouchableOpacity>
     </View>
   );

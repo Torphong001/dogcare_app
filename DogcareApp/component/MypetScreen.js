@@ -12,7 +12,7 @@ const MypetScreen = ({ navigation, userToken }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('http://192.168.3.180/dogcare/getpets.php', {
+        const response = await axios.get('http://192.168.3.148/dogcare/getpets.php', {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },

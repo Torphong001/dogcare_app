@@ -8,7 +8,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
 
   const handleLoginPress = async () => {
     try {
-      const response = await fetch('http://192.168.3.180/dogcare/login.php', {
+      const response = await fetch('http://192.168.3.148/dogcare/login.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,11 +25,11 @@ const LoginScreen = ({ navigation, handleLogin }) => {
       if (result.success) {
         await AsyncStorage.setItem('userToken', result.token);
         handleLogin(result.token); // Call handleLogin to update userToken
-        Alert.alert('Login Successful');
+        Alert.alert(' ','เข้าสู่ระบบสําเร็จ');
         console.log('Token:', result.token);
         navigation.navigate('Breed');
       } else {
-        Alert.alert('Error', result.message || 'Username or Password is incorrect');
+        Alert.alert(' ', result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -42,28 +42,28 @@ const LoginScreen = ({ navigation, handleLogin }) => {
       <Text style={styles.title}>เข้าสู่ระบบ</Text>
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="ชื่อผู้ใช้"
         placeholderTextColor="#aaa"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="รหัสผ่าน"
         placeholderTextColor="#aaa"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={handleLoginPress}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>เข้าสู่ระบบ</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.registerButton}
         onPress={() => navigation.navigate('StepRegister1')}
       >
-        <Text style={styles.registerButtonText}>Register</Text>
+        <Text style={styles.registerButtonText}>สมัครสมาชิก</Text>
       </TouchableOpacity>
     </View>
   );
