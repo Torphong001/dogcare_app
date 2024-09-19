@@ -8,7 +8,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
 
   const handleLoginPress = async () => {
     try {
-      const response = await fetch('http://192.168.3.148/dogcare/login.php', {
+      const response = await fetch('http://192.168.3.158/dogcare/login.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

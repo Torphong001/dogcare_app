@@ -12,7 +12,7 @@ const MypetScreen = ({ navigation, userToken }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('http://192.168.3.148/dogcare/getpets.php', {
+        const response = await axios.get('http://192.168.3.158/dogcare/getpets.php', {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
@@ -46,6 +46,7 @@ const MypetScreen = ({ navigation, userToken }) => {
         <FontAwesome name="user" size={100} color="gray" />
       )}
       <View style={styles.textContainer}>
+        <Text style={styles.petName}>{item.pet_id}</Text>
         <Text style={styles.petName}>{item.pet_name}</Text>
         <Text style={styles.petBreed}>สายพันธุ์: {item.breed_name}</Text>
       </View>

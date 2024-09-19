@@ -11,7 +11,7 @@ const BreedScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current; // Animation value for modal fade in/out
 
   useEffect(() => {
-    fetch('http://192.168.3.148/dogcare/breedinfo.php')
+    fetch('http://192.168.3.158/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         setBreeds(data);
