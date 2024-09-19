@@ -23,7 +23,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
   useEffect(() => {
     // Fetch breeds from the API
-    fetch('http://192.168.3.158/dogcare/breedinfo.php')
+    fetch('http://192.168.3.241/dogcare/breedinfo.php')
 
       .then(response => response.json())
       .then(data => {
@@ -73,7 +73,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     };
 
     try {
-      const response = await fetch('http://192.168.3.150/dogcare/addpet.php', {
+      const response = await fetch('http://192.168.3.241/dogcare/addpet.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

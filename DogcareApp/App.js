@@ -13,6 +13,7 @@ import SearchScreen from './component/SearchScreen';
 import MypetScreen from './component/MypetScreen';
 import AddPetScreen from './component/AddPetScreen';
 import MyPetInfo from './component/MyPetInfo';
+import Notipet from './component/Notipet';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -175,6 +176,15 @@ const App = () => {
         options={{ 
           tabBarLabel: 'ข้อมูลสุนัข',
           title: 'ข้อมูลสุนัข',
+        headerTitleAlign: 'center', // Center the title
+        headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
+        headerTintColor: '#fff', // 
+        headerTitleStyle: { fontWeight: 'bold' }
+        }} />
+        <Stack.Screen name="Notipet" component={Notipet} 
+        options={{ 
+          tabBarLabel: 'การแจ้งเตือน',
+          title: 'การแจ้งเตือน',
         headerTitleAlign: 'center', // Center the title
         headerStyle: { backgroundColor: '#FF9090' }, // Set header background color
         headerTintColor: '#fff', // 

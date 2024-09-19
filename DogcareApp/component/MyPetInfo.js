@@ -13,8 +13,8 @@ const MyPetInfo = ({ route, navigation }) => {
   const [updatedPet, setUpdatedPet] = useState({
     pet_name: pet.pet_name,
     breed_name: pet.breed_name,
-    pet_weight: pet.pet_weight.toString(), // Ensure values are strings
-    pet_height: pet.pet_height.toString(), // Ensure values are strings
+    pet_weight: pet.pet_weight?.toString() ?? '0',  // Default to '0' if null 
+    pet_height: pet.pet_height?.toString() ?? '0',
     pet_sex: pet.pet_sex,
     pet_bd: pet.pet_bd,
   });
@@ -23,8 +23,8 @@ const MyPetInfo = ({ route, navigation }) => {
     setUpdatedPet({
       pet_name: pet.pet_name,
       breed_name: pet.breed_name,
-      pet_weight: pet.pet_weight.toString(),
-      pet_height: pet.pet_height.toString(),
+      pet_weight: pet.pet_weight?.toString() ?? '0',  // Default to '0' if null 
+      pet_height: pet.pet_height?.toString() ?? '0',
       pet_sex: pet.pet_sex,
       pet_bd: pet.pet_bd,
     });
@@ -39,20 +39,10 @@ const MyPetInfo = ({ route, navigation }) => {
     return `${years} ปี ${months} เดือน`;
   };
 
-  const renderWithLineBreaks2 = (text) => {
-    if (!text) return null;
-    return text.split('|').map((line, index) => (
-      <Text key={index} style={styles.modalText}>
-        {line}
-        {index < text.split('|').length - 1 && <Text>{'\n'}</Text>}
-      </Text>
-    ));
-  };
-
   const fetchBreedInfo = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://192.168.3.158/dogcare/getbreedinfo.php', { breed_id: pet.breed_id });
+      const response = await axios.post('http://192.168.3.241/dogcare/getbreedinfo.php', { breed_id: pet.breed_id });
       setBreedInfo(response.data);
     } catch (error) {
       console.error('Error fetching breed info:', error);
@@ -79,9 +69,8 @@ const MyPetInfo = ({ route, navigation }) => {
   };
 
   const handleSave = async () => {
-    console.log(updatedPet);
     try {
-      const response = await axios.post('http://192.168.3.158/dogcare/editpetinfo.php', {
+      const response = await axios.post('http://192.168.3.241/dogcare/editpetinfo.php', {
         pet_id: pet.pet_id,
         ...updatedPet,
       });
@@ -89,8 +78,7 @@ const MyPetInfo = ({ route, navigation }) => {
       if (response.data.success) {
         Alert.alert("Success", "Pet information updated successfully!");
         setIsEditing(false);
-        // Fetch updated pet data to refresh screen
-        const updatedPetResponse = await axios.post('http://192.168.3.158/dogcare/getpetinfo.php', { pet_id: pet.pet_id });
+        const updatedPetResponse = await axios.post('http://192.168.3.241/dogcare/getpets.php', { pet_id: pet.pet_id });
         setUpdatedPet(updatedPetResponse.data);
       } else {
         Alert.alert("Error", "Failed to update pet information.");
@@ -99,6 +87,34 @@ const MyPetInfo = ({ route, navigation }) => {
       console.error("Error updating pet info:", error);
       Alert.alert("Error", "An error occurred while updating pet information.");
     }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this pet?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              const response = await axios.post('http://192.168.3.241/dogcare/deletepet.php', { pet_id: pet.pet_id });
+              if (response.data.success) {
+                Alert.alert("Success", "Pet deleted successfully!");
+                navigation.goBack(); // Navigate back after deleting
+              } else {
+                Alert.alert("Error", "Failed to delete pet.");
+              }
+            } catch (error) {
+              console.error("Error deleting pet:", error);
+              Alert.alert("Error", "An error occurred while deleting the pet.");
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -203,11 +219,26 @@ const MyPetInfo = ({ route, navigation }) => {
               <Text style={styles.moreButtonText}>ยกเลิก</Text>
             </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={[styles.moreButton, { backgroundColor: '#FF4500' }]}
+            onPress={handleDelete}
+          >
+            <Text style={styles.moreButtonText}>ลบ</Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.moreButton} onPress={fetchBreedInfo}>
           <Text style={styles.moreButtonText}>ดูเพิ่มเติม</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.moreButton}
+  onPress={() => navigation.navigate('Notipet', { pet_id: pet.pet_id })}
+>
+  <Text style={styles.moreButtonText}>แจ้งเตือน</Text>
+</TouchableOpacity>
+
+
       </View>
 
       <Modal
@@ -233,7 +264,7 @@ const MyPetInfo = ({ route, navigation }) => {
                     <Text style={styles.modalRegion}>{breedInfo.region}</Text>
                   </View>
                 </View>
-                <Text style={styles.modalDescription}>{renderWithLineBreaks2(breedInfo.description)}</Text>
+                <Text style={styles.modalDescription}>{(breedInfo.description)}</Text>
               </ScrollView>
             ) : (
               <Text>ข้อมูลไม่พบ</Text>
@@ -249,45 +280,16 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
   },
   petImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    marginBottom: 16,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 20,
   },
   infoContainer: {
     width: '100%',
-    paddingHorizontal: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  labelCentered: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  valueCentered: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  input: {
-    height: 40,
-    borderColor: '#FF9090',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 8,
-    marginBottom: 12,
   },
   inlineContainer: {
     flexDirection: 'row',
@@ -295,66 +297,69 @@ const styles = StyleSheet.create({
   },
   inlineItem: {
     flex: 1,
-    marginHorizontal: 8,
+  },
+  labelCentered: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  valueCentered: {
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  value: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: 'white',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 10,
   },
   moreButton: {
     backgroundColor: '#FF9090',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    padding: 10,
     borderRadius: 5,
-    marginVertical: 5,
-  },
-  moreButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
+    alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: '#FF7F7F',
+    backgroundColor: '#ccc',
+  },
+  moreButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: 300,
+    backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
   },
   closeButton: {
     alignSelf: 'flex-end',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  modalImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: 10,
-  },
-  modalTextContainer: {
-    flex: 1,
-  },
-  modalBreedName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalRegion: {
-    fontSize: 16,
-    color: '#666',
-  },
-  modalDescription: {
-    fontSize: 16,
   },
 });
 
