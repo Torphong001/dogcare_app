@@ -42,7 +42,7 @@ const MyPetInfo = ({ route, navigation }) => {
   const fetchBreedInfo = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://192.168.3.241/dogcare/getbreedinfo.php', { breed_id: pet.breed_id });
+      const response = await axios.post('http://192.168.3.15/dogcare/getbreedinfo.php', { breed_id: pet.breed_id });
       setBreedInfo(response.data);
     } catch (error) {
       console.error('Error fetching breed info:', error);
@@ -70,7 +70,7 @@ const MyPetInfo = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.post('http://192.168.3.241/dogcare/editpetinfo.php', {
+      const response = await axios.post('http://192.168.3.15/dogcare/editpetinfo.php', {
         pet_id: pet.pet_id,
         ...updatedPet,
       });
@@ -78,7 +78,7 @@ const MyPetInfo = ({ route, navigation }) => {
       if (response.data.success) {
         Alert.alert("Success", "Pet information updated successfully!");
         setIsEditing(false);
-        const updatedPetResponse = await axios.post('http://192.168.3.241/dogcare/getpets.php', { pet_id: pet.pet_id });
+        const updatedPetResponse = await axios.post('http://192.168.3.15/dogcare/getpets.php', { pet_id: pet.pet_id });
         setUpdatedPet(updatedPetResponse.data);
       } else {
         Alert.alert("Error", "Failed to update pet information.");
@@ -99,7 +99,7 @@ const MyPetInfo = ({ route, navigation }) => {
           text: "OK",
           onPress: async () => {
             try {
-              const response = await axios.post('http://192.168.3.241/dogcare/deletepet.php', { pet_id: pet.pet_id });
+              const response = await axios.post('http://192.168.3.15/dogcare/deletepet.php', { pet_id: pet.pet_id });
               if (response.data.success) {
                 Alert.alert("Success", "Pet deleted successfully!");
                 navigation.goBack(); // Navigate back after deleting

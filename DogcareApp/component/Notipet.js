@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Modal, TextInput, Button, Alert } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Modal, TextInput, Button, Alert, ScrollView } from 'react-native';
 import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -10,7 +10,8 @@ const NotiPet = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [notiName, setNotiName] = useState('');
   const [notiTime, setNotiTime] = useState(new Date());
-  const [notiDay, setNotiDay] = useState([]);
+  const [notiDayType, setNotiDayType] = useState('only');
+  const [notiSpecificDays, setNotiSpecificDays] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const dayOptions = [
@@ -26,11 +27,11 @@ const NotiPet = ({ route }) => {
   useEffect(() => {
     const fetchPetNotification = async () => {
       try {
-        const response = await axios.post('http://192.168.3.241/dogcare/notipet.php', { pet_id });
+        const response = await axios.post('http://192.168.3.15/dogcare/notipet.php', { pet_id });
         if (response.data.success) {
           setNotifications(response.data.notifications);
         } else {
-          setNotifications([]); // No notifications found
+          setNotifications([]);
         }
       } catch (error) {
         console.error('Error fetching pet notifications:', error.response || error.message);
@@ -42,18 +43,33 @@ const NotiPet = ({ route }) => {
     fetchPetNotification();
   }, [pet_id]);
 
+  const handleCancel = () => {
+    setModalVisible(false);
+    setNotiName('');
+    setNotiTime(new Date());
+    setNotiDayType('only');
+    setNotiSpecificDays([]);
+  };
   const handleAddNotification = async () => {
     const formattedTime = `${notiTime.getHours().toString().padStart(2, '0')}:${notiTime.getMinutes().toString().padStart(2, '0')}:00`;
-    const formattedDay = notiDay.join('|');
-  
+    
+    let formattedDay = '';
+    if (notiDayType === 'only') {
+      formattedDay = 'only';
+    } else if (notiDayType === 'everyday') {
+      formattedDay = 'S|M|T|W|Th|F|Sa';
+    } else {
+      formattedDay = notiSpecificDays.join('|');
+    }
+
     try {
-      const response = await axios.post('http://192.168.3.241/dogcare/addnoti.php', {
+      const response = await axios.post('http://192.168.3.15/dogcare/addnoti.php', {
         noti_name: notiName,
         noti_time: formattedTime,
         noti_day: formattedDay,
         noti_pet_id: pet_id,
       });
-  
+
       if (response.data.success) {
         setNotifications([...notifications, { noti_name: notiName, noti_time: formattedTime, noti_day: formattedDay }]);
         Alert.alert('Notification added successfully!');
@@ -64,10 +80,10 @@ const NotiPet = ({ route }) => {
       console.error('Error adding notification:', error.message || 'Unknown error');
       Alert.alert('Error adding notification', error.message || 'Unknown error');
     }
-  
+
     setModalVisible(false);
   };
-  
+
   const handleDeleteNotification = (noti_id) => {
     Alert.alert(
       'Confirm Deletion',
@@ -81,10 +97,10 @@ const NotiPet = ({ route }) => {
           text: 'Delete',
           onPress: async () => {
             try {
-              const response = await axios.post('http://192.168.3.241/dogcare/deletenoti.php', {
+              const response = await axios.post('http://192.168.3.15/dogcare/deletenoti.php', {
                 noti_id,
               });
-  
+
               if (response.data.success) {
                 setNotifications(notifications.filter(noti => noti.noti_id !== noti_id));
                 Alert.alert('Notification deleted successfully!');
@@ -102,11 +118,11 @@ const NotiPet = ({ route }) => {
     );
   };
 
-  const toggleDaySelection = (day) => {
-    if (notiDay.includes(day)) {
-      setNotiDay(notiDay.filter(d => d !== day));
+  const toggleSpecificDaySelection = (day) => {
+    if (notiSpecificDays.includes(day)) {
+      setNotiSpecificDays(notiSpecificDays.filter(d => d !== day));
     } else {
-      setNotiDay([...notiDay, day]);
+      setNotiSpecificDays([...notiSpecificDays, day]);
     }
   };
 
@@ -120,29 +136,26 @@ const NotiPet = ({ route }) => {
         <Text style={styles.addButtonText}>เพิ่มการแจ้งเตือน</Text>
       </TouchableOpacity>
 
-      {/* List of notifications */}
       {notifications.length > 0 ? (
-        notifications.map((noti, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.cardTitle}>Notification {noti.noti_id}</Text>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardText}>Name: {noti.noti_name}</Text>
-              <Text style={styles.cardText}>Time: {noti.noti_time}</Text>
-              <Text style={styles.cardText}>Date: {noti.noti_day}</Text>
+        <ScrollView style={styles.notificationList}>
+          {notifications.map((noti, index) => (
+            <View key={index} style={styles.card}>
+              <Text style={styles.cardTitle}>Notification {noti.noti_id}</Text>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardText}>Name: {noti.noti_name}</Text>
+                <Text style={styles.cardText}>Time: {noti.noti_time}</Text>
+                <Text style={styles.cardText}>Date: {noti.noti_day}</Text>
+              </View>
+              <TouchableOpacity onPress={() => handleDeleteNotification(noti.noti_id)} style={styles.deleteButton}>
+                <Text style={styles.deleteButtonText}>ลบ</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => handleDeleteNotification(noti.noti_id)}
-              style={styles.deleteButton}
-            >
-              <Text style={styles.deleteButtonText}>ลบ</Text>
-            </TouchableOpacity>
-          </View>
-        ))
+          ))}
+        </ScrollView>
       ) : (
         <Text style={styles.noNotifications}>สุนัขของคุณยังไม่มีการแจ้งเตือน</Text>
       )}
 
-      {/* Modal for adding notification */}
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -152,10 +165,13 @@ const NotiPet = ({ route }) => {
               placeholder="Notification Name"
               value={notiName}
               onChangeText={setNotiName}
+              placeholderTextColor="#ccc"
             />
 
             <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.timeButton}>
-              <Text style={styles.timeButtonText}>{`เลือกเวลา: ${notiTime.getHours().toString().padStart(2, '0')}:${notiTime.getMinutes().toString().padStart(2, '0')}`}</Text>
+              <Text style={styles.timeButtonText}>
+                เลือกเวลา: {`${notiTime.getHours().toString().padStart(2, '0')}:${notiTime.getMinutes().toString().padStart(2, '0')}`}
+              </Text>
             </TouchableOpacity>
             
             {showTimePicker && (
@@ -173,23 +189,40 @@ const NotiPet = ({ route }) => {
               />
             )}
 
-            <Text style={styles.modalSubtitle}>เลือกวัน:</Text>
-            {dayOptions.map((day) => (
-              <TouchableOpacity
-                key={day.value}
-                onPress={() => toggleDaySelection(day.value)}
-                style={[
-                  styles.dayButton,
-                  notiDay.includes(day.value) && styles.selectedDayButton,
-                ]}
-              >
-                <Text style={styles.dayButtonText}>{day.label}</Text>
-              </TouchableOpacity>
-            ))}
+            <Text style={styles.modalSubtitle}>เลือกประเภทการแจ้งเตือน:</Text>
 
-            <View style={styles.modalButtons}>
-              <Button title="ยกเลิก" onPress={() => setModalVisible(false)} color="#FF9090" />
-              <Button title="เพิ่ม" onPress={handleAddNotification} color="#FF9090" />
+            <View style={styles.dayTypeContainer}>
+              {['only', 'everyday', 'specific'].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => setNotiDayType(type)}
+                  style={[styles.dayTypeButton, notiDayType === type && styles.selectedDayTypeButton]}
+                >
+                  <Text style={styles.dayTypeButtonText}>{type === 'only' ? 'Only once' : type === 'everyday' ? 'Everyday' : 'Specific days'}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {notiDayType === 'specific' && (
+              <View>
+                <Text style={styles.modalSubtitle}>เลือกวัน:</Text>
+                {dayOptions.map((day) => (
+                  <TouchableOpacity
+                    key={day.value}
+                    onPress={() => toggleSpecificDaySelection(day.value)}
+                    style={[styles.dayButton, notiSpecificDays.includes(day.value) && styles.selectedDayButton]}
+                  >
+                    <Text style={[styles.dayButtonText, notiSpecificDays.includes(day.value) && styles.selectedDayButtonText]}>
+                      {day.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            <View style={styles.modalActions}>
+              <Button title="Save" onPress={handleAddNotification} color="#FF9090" />
+              <Button title="Cancel" onPress={handleCancel} />
             </View>
           </View>
         </View>
@@ -213,83 +246,82 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9090',
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
     marginBottom: 20,
+    alignItems: 'center',
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  notificationList: {
+    marginBottom: 20,
   },
   card: {
     backgroundColor: '#fff',
-    padding: 20,
-    marginVertical: 10,
     borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
+    padding: 15,
+    marginBottom: 10,
+    elevation: 2,
   },
   cardTitle: {
-    fontWeight: 'bold',
     fontSize: 18,
-    marginBottom: 10,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   cardContent: {
     marginBottom: 10,
   },
   cardText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
   deleteButton: {
-    backgroundColor: '#FF7F7F',
+    backgroundColor: '#FF4d4d',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
   },
   deleteButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
   },
   noNotifications: {
     fontSize: 16,
-    color: '#666',
+    color: '#999',
     textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    width: '80%',
     backgroundColor: '#fff',
+    width: '90%',
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   input: {
-    width: '100%',
-    padding: 10,
-    borderColor: '#ddd',
+    height: 40,
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
+    paddingHorizontal: 10,
     marginBottom: 15,
   },
   timeButton: {
-    padding: 10,
     backgroundColor: '#FF9090',
+    padding: 10,
     borderRadius: 5,
     marginBottom: 15,
+    alignItems: 'center',
   },
   timeButtonText: {
     color: '#fff',
@@ -297,14 +329,30 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 10,
+  },
+  dayTypeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 10,
   },
-  dayButton: {
+  dayTypeButton: {
+    backgroundColor: '#f0f0f0',
     padding: 10,
-    backgroundColor: '#eee',
     borderRadius: 5,
-    margin: 5,
+  },
+  selectedDayTypeButton: {
+    backgroundColor: '#FF9090',
+  },
+  dayTypeButtonText: {
+    color: '#333',
+  },
+  dayButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
   },
   selectedDayButton: {
     backgroundColor: '#FF9090',
@@ -312,10 +360,13 @@ const styles = StyleSheet.create({
   dayButtonText: {
     color: '#333',
   },
-  modalButtons: {
+  selectedDayButtonText: {
+    color: '#fff',
+  },
+  modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    marginTop: 15,
   },
 });
 
