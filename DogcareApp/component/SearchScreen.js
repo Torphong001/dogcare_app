@@ -1,48 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { View, Button, Image, StyleSheet, Alert, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
+import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import Tflite from 'tflite-react-native'; // นำเข้าไลบรารี TFLite
 
 const SearchScreen = () => {
   const [imageUri, setImageUri] = useState(null);
   const [showBreedButton, setShowBreedButton] = useState(false);
-  const [breedResults, setBreedResults] = useState([]);
-  const [isTfReady, setIsTfReady] = useState(false);
-  const [model, setModel] = useState(null);
+  const [topBreed, setTopBreed] = useState(null);
+  const [tflite, setTflite] = useState(null);
 
-  useEffect(() => {
-    const initializeTensorFlow = async () => {
-      try {
-        await tf.ready(); // รอให้ TensorFlow พร้อมใช้งานก่อน
-        
-        // ตรวจสอบว่า TensorFlow พร้อมใช้งานจริงหรือไม่
-        if (tf.isLoaded()) {
-          setIsTfReady(true);
-          Alert.alert('TensorFlow พร้อมใช้งาน');
-        } else {
-          Alert.alert('TensorFlow ยังไม่พร้อมใช้งาน');
-        }
-      } catch (error) {
-        console.error('Error initializing TensorFlow:', error);
-        Alert.alert('ไม่สามารถเตรียม TensorFlow ได้');
+  const classNames = [
+    "เกรย์ฮาวด์", "โกลเด้น รีทรีฟเวอร์", "คอลลี่", "ชเนาเซอร์", "ชิวาวา", "ชิสุห์", 
+    "เชา เชา", "ซามอยด์", "ไซบีเรียน ฮัสกี้", "โดเบอร์แมน", "บอร์เดอร์ คอลลี่", 
+    "บีเกิ้ล", "เบลเยี่ยมมาลินอยส์", "เบอร์นีสเมาน์เทนด็อก", "ปอมเมอเรเนียน", "ปั๊ก", 
+    "ปักกิ่ง", "พอยเตอร์", "พุดเดิ้ล", "ร็อตไวเลอร์", "ลาบราดอร์รีทรีฟเวอร์", "วิปเพ็ท", 
+    "อลาสกัน มาลามิวท์", "ไอริช วูล์ฟฮาวด์"
+  ];
+
+  const initializeTflite = async () => {
+    const tfliteInstance = new Tflite();
+    setTflite(tfliteInstance); // ตั้งค่า tflite instance
+
+    // ดาวน์โหลดโมเดลและเลเบล
+
+  
+    await modelAsset.downloadAsync();
+    await labelsAsset.downloadAsync();
+    
+    tfliteInstance.loadModel({
+      model: modelAsset.localUri || modelAsset.uri,
+      labels: labelsAsset.localUri || labelsAsset.uri,
+    }, (err, res) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log('Model Loaded', res);
       }
-    };
-
-    initializeTensorFlow();
-  }, []);
-
-  const loadModel = async () => {
-    try {
-      const model = await tf.loadGraphModel('https://storage.googleapis.com/tm-model/a5yCGpx8k/model.json');
-      setModel(model);
-      Alert.alert('โมเดลโหลดเรียบร้อย');
-    } catch (error) {
-      console.error('Error loading model:', error);
-      Alert.alert('ไม่สามารถโหลดโมเดลได้');
-    }
+    });
   };
+  
+  useEffect(() => {
+    initializeTflite();
+  }, []);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -66,35 +67,48 @@ const SearchScreen = () => {
   };
 
   const processImage = async (uri) => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    const imageTensor = await tf.browser.fromBlob(blob);
-    const resizedTensor = tf.image.resizeBilinear(imageTensor, [224, 224]); // ปรับขนาดให้ตรงกับโมเดล
-    const normalizedTensor = resizedTensor.div(255.0); // Normalize
-    return normalizedTensor.expandDims(0); // เพิ่มมิติ
+    try {
+      const imgB64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return imgB64;
+    } catch (error) {
+      console.error('เกิดข้อผิดพลาดในการประมวลผลภาพ:', error);
+      Alert.alert('เกิดข้อผิดพลาดในการประมวลผลภาพ: ' + error.message);
+      return null;
+    }
   };
 
   const handleBreedDetection = async () => {
-    if (!isTfReady) {
-      Alert.alert('TensorFlow ไม่พร้อมใช้งาน');
+    if (!tflite) {
+      Alert.alert('โมเดลยังไม่ได้โหลด');
       return;
     }
-    if (!model) {
-      await loadModel(); // โหลดโมเดลถ้ายังไม่ได้โหลด
-    }
+
     Alert.alert("กำลังระบุสายพันธุ์จากภาพที่เลือก...");
 
-    const imageTensor = await processImage(imageUri);
+    const imgB64 = await processImage(imageUri);
+    if (!imgB64) return;
 
-    const predictions = await model.predict(imageTensor).data();
-
-    const results = predictions.map((prediction, index) => ({
-      name: `Breed ${index + 1}`, // หรือใช้ชื่อจาก metadata
-      percentage: (prediction * 100).toFixed(2),
-    })).sort((a, b) => b.percentage - a.percentage).slice(0, 3); // เรียงลำดับและเลือก 3 ตัวเลือก
-
-    setBreedResults(results);
-    Alert.alert('ผลลัพธ์', JSON.stringify(results));
+    tflite.runModelOnImage({
+      path: imageUri,       // ใช้ path ของภาพ
+      imageMean: 0,
+      imageStd: 255,
+      numResults: 3,        // จำนวนผลลัพธ์ที่ต้องการ
+      threshold: 0.05       // กำหนด threshold สำหรับการคาดการณ์
+    }, (err, res) => {
+      if (err) {
+        console.error('Error during prediction:', err);
+        Alert.alert('เกิดข้อผิดพลาดระหว่างการคาดการณ์: ' + err.message);
+      } else {
+        const results = res.map((prediction) => ({
+          name: classNames[prediction.index],
+          percentage: (prediction.confidence * 100).toFixed(2),
+        }));
+        setTopBreed(results[0]); // ตั้งค่า topBreed เป็นผลลัพธ์ตัวแรก
+        Alert.alert('ผลลัพธ์', JSON.stringify(results));
+      }
+    });
   };
 
   return (
@@ -106,12 +120,9 @@ const SearchScreen = () => {
       {showBreedButton && (
         <Button title="ระบุสายพันธุ์" onPress={handleBreedDetection} />
       )}
-      {breedResults.length > 0 && (
+      {topBreed && (
         <View>
-          <Text>ผลการระบุสายพันธุ์:</Text>
-          {breedResults.map((breed, index) => (
-            <Text key={index}>{`${breed.name}: ${breed.percentage}%`}</Text>
-          ))}
+          <Text>{`ผลการระบุ: ${topBreed.name}, ${topBreed.percentage}%`}</Text>
         </View>
       )}
     </View>

@@ -10,9 +10,12 @@ const NotiPet = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [notiName, setNotiName] = useState('');
   const [notiTime, setNotiTime] = useState(new Date());
+  const [notiDate, setNotiDate] = useState(new Date()); // เพิ่ม notiDate
   const [notiDayType, setNotiDayType] = useState('only');
   const [notiSpecificDays, setNotiSpecificDays] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false); // เพิ่ม showDatePicker
+  
 
   const dayOptions = [
     { label: 'Sunday', value: 'S' },
@@ -27,7 +30,7 @@ const NotiPet = ({ route }) => {
   useEffect(() => {
     const fetchPetNotification = async () => {
       try {
-        const response = await axios.post('http://192.168.3.15/dogcare/notipet.php', { pet_id });
+        const response = await axios.post('http://192.168.3.194/dogcare/notipet.php', { pet_id });
         if (response.data.success) {
           setNotifications(response.data.notifications);
         } else {
@@ -47,26 +50,28 @@ const NotiPet = ({ route }) => {
     setModalVisible(false);
     setNotiName('');
     setNotiTime(new Date());
+    setNotiDate(new Date()); // รีเซ็ต notiDate
     setNotiDayType('only');
     setNotiSpecificDays([]);
   };
   const handleAddNotification = async () => {
     const formattedTime = `${notiTime.getHours().toString().padStart(2, '0')}:${notiTime.getMinutes().toString().padStart(2, '0')}:00`;
     
-    let formattedDay = '';
+    let formattedDay = null;
+    let formattedDate = null;
     if (notiDayType === 'only') {
-      formattedDay = 'only';
+      formattedDate = `${notiDate.getFullYear()}-${(notiDate.getMonth() + 1).toString().padStart(2, '0')}-${notiDate.getDate().toString().padStart(2, '0')}`;
     } else if (notiDayType === 'everyday') {
       formattedDay = 'S|M|T|W|Th|F|Sa';
     } else {
       formattedDay = notiSpecificDays.join('|');
     }
-
     try {
-      const response = await axios.post('http://192.168.3.15/dogcare/addnoti.php', {
+      const response = await axios.post('http://192.168.3.194/dogcare/addnoti.php', {
         noti_name: notiName,
         noti_time: formattedTime,
         noti_day: formattedDay,
+        noti_date: formattedDate,
         noti_pet_id: pet_id,
       });
 
@@ -97,7 +102,7 @@ const NotiPet = ({ route }) => {
           text: 'Delete',
           onPress: async () => {
             try {
-              const response = await axios.post('http://192.168.3.15/dogcare/deletenoti.php', {
+              const response = await axios.post('http://192.168.3.194/dogcare/deletenoti.php', {
                 noti_id,
               });
 
@@ -145,6 +150,7 @@ const NotiPet = ({ route }) => {
                 <Text style={styles.cardText}>Name: {noti.noti_name}</Text>
                 <Text style={styles.cardText}>Time: {noti.noti_time}</Text>
                 <Text style={styles.cardText}>Date: {noti.noti_day}</Text>
+                <Text style={styles.cardText}>Date: {noti.noti_date}</Text>
               </View>
               <TouchableOpacity onPress={() => handleDeleteNotification(noti.noti_id)} style={styles.deleteButton}>
                 <Text style={styles.deleteButtonText}>ลบ</Text>
@@ -202,7 +208,29 @@ const NotiPet = ({ route }) => {
                 </TouchableOpacity>
               ))}
             </View>
+            {notiDayType === 'only' && (
+              <View>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+                  <Text style={styles.dateButtonText}>
+                    เลือกวันที่: {`${notiDate.getDate().toString().padStart(2, '0')}-${(notiDate.getMonth() + 1).toString().padStart(2, '0')}-${notiDate.getFullYear()}`}
+                  </Text>
+                </TouchableOpacity>
 
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={notiDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setNotiDate(selectedDate);
+                      }
+                    }}
+                  />
+                )}
+              </View>
+            )}
             {notiDayType === 'specific' && (
               <View>
                 <Text style={styles.modalSubtitle}>เลือกวัน:</Text>
