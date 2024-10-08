@@ -16,6 +16,9 @@ import MyPetInfo from "./component/MyPetInfo";
 import Notipet from "./component/Notipet";
 import Notiuser from "./component/Notiuser";
 import axios from 'axios';
+import Toast from 'react-native-toast-message'; // นำเข้า Toast
+
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -23,6 +26,7 @@ const Stack = createStackNavigator();
 const App = () => {
   const [notifications, setNotifications] = useState([]);
   const [userToken, setUserToken] = useState(null);
+  
   useEffect(() => {
     const loadUserToken = async () => {
       const token = await AsyncStorage.getItem("userToken");
@@ -37,34 +41,100 @@ const App = () => {
   useEffect(() => {
     const fetchNotifications = async (token) => {
       try {
-        const response = await axios.get('http://192.168.3.194/dogcare/getnotiall.php', {
-          headers: {
-            Authorization: `Bearer ${token}`, // ส่ง token ผ่าน Authorization header
-          },
-        });
+          const response = await axios.get('http://192.168.3.194/dogcare/getnotiall.php', {
+              headers: {
+                  Authorization: `Bearer ${token}`,
+              },
+          });
+          if (Array.isArray(response.data)) {
+            // ตรวจสอบแต่ละ notification
+            setNotifications(response.data);
+              response.data.forEach(async (notification) => {
+                  if (notification.noti_status === null) {
+                      Toast.show({
+                          text1: `Notification ID: ${notification.noti_id}`, // แสดงข้อความ
+                          position: 'top',
+                          type: 'info',
+                      });
   
-        if (Array.isArray(response.data)) {
-          setNotifications(response.data); // เก็บข้อมูลใน state
-        } else {
-        }
+                      // ส่งข้อความไปยัง LINE
+                      await sendLineNotification(userToken,notification);
+  
+                      // อัปเดต noti_status เป็น F
+                      await axios.post('http://192.168.3.194/dogcare/updatenoti.php', {
+                          noti_id: notification.noti_id,
+                          noti_status: 'F',
+                      });
+                  }
+              });
+          }
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+          console.error('Error fetching notifications:', error);
       }
-    };
-  
+  };
+
     if (userToken) {
-      fetchNotifications(userToken); // เรียกข้อมูลครั้งแรก
-  
-      const intervalId = setInterval(() => {
-        fetchNotifications(userToken); // เรียกข้อมูลทุกๆ 5 วินาที
-      }, 10000);
-  
-      // ทำความสะอาดเมื่อ component unmount
-      return () => clearInterval(intervalId);
+        fetchNotifications(userToken);
+
+        const intervalId = setInterval(() => {
+            fetchNotifications(userToken);
+        }, 5000);
+
+        return () => clearInterval(intervalId);
     }
-  }, [userToken]);
+}, [userToken]);
   
-  
+const sendLineNotification = async (userToken, notification) => {
+  try {
+      // Fetch user_id_line from your API
+      const userInfoResponse = await axios.get("http://192.168.3.194/dogcare/getuser_lineid.php", {
+          headers: {
+              Authorization: `Bearer ${userToken}`
+          }
+      });
+
+      // Check if user_id_line exists in the response
+      const userIdLine = userInfoResponse.data.user_id_line;
+      if (!userIdLine) {
+          console.error("User ID Line not found");
+          return;
+      }
+      console.log(notification.noti_pet_id)
+      // Fetch pet details using the notification's pet ID
+      const petResponse = await axios.get(`http://192.168.3.194/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
+      const pet = petResponse.data;
+
+      console.log(pet)
+
+      // Prepare the message
+      const messageText = `แจ้งเตือน\nชื่อแจ้งเตือน: ${notification.noti_name}\nชื่อสุนัข: ${pet.pet_name}`;
+
+      // Send the LINE notification
+      const response = await axios.post(
+          "https://api.line.me/v2/bot/message/push",
+          {
+              to: userIdLine, // Use the fetched user_id_line
+              messages: [
+                  {
+                      type: "text",
+                      text: messageText, // Use the prepared message
+                  },
+              ],
+          },
+          {
+              headers: {
+                  Authorization: `Bearer fjUF82T60ul2cmiParfa3qAhU3HzLaqVP+Hw6ToHp/kw7y8dvEnZuKcL4++F7sPm4R2BBB2hYdP1LvQPFHSlPAGswlzwAJ/Br7BQ8g5jU/PbHDRjcubx592eNL9mZOwK9GO43UeS7Rs2vYRPEe5jfgdB04t89/1O/w1cDnyilFU=`, // Use the correct Channel Access Token
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+
+      console.log('Message sent successfully:', response.data);
+  } catch (error) {
+      console.error('Error sending message:', error.response ? error.response.data : error.message);
+  }
+};
+
   
 
   return (
@@ -148,9 +218,11 @@ const App = () => {
           }}
         />
       </Stack.Navigator>
+      <Toast ref={Toast.setRef} />
     </NavigationContainer>
   );
 };
+
 const TabNavigator = ({ userToken, setUserToken, notifications }) => {
   return (
     <Tab.Navigator

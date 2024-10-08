@@ -34,7 +34,10 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
       fetchUserInfo();
     }
   }, [isFocused, userToken]);
-
+  const handlePress = async () => {
+    await handleChange(); // เรียกฟังก์ชันเพื่ออัปเดตสถานะ notification
+    navigation.navigate('Notiuser'); // นำทางไปยังหน้าที่ต้องการ
+  };
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
@@ -52,7 +55,25 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
       </View>
     </TouchableOpacity>
   );
-
+  const handleChange = async () => {
+    if (hasNotifications) {
+    try {
+      // สร้าง array ของ promises สำหรับการอัปเดตแต่ละ notification
+      const updatePromises = notifications.map(async (notification) => {
+        return await axios.post('http://192.168.3.194/dogcare/updatenoti.php', {
+          noti_id: notification.noti_id, // ส่ง noti_id เพื่ออัปเดต
+          noti_status: 'R', // อัปเดตสถานะเป็น 'R'
+        });
+      });
+  
+      // รอให้ทุกการอัปเดตเสร็จสิ้น
+      await Promise.all(updatePromises);
+      console.log('Notifications updated successfully');
+    } catch (error) {
+      console.error('Error updating notifications:', error);
+    }
+  };
+  }
   if (loading) {
     return (
       <View style={styles.container}>
@@ -62,7 +83,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
   }
 
   // เช็คว่ามีการแจ้งเตือนที่ noti_status ไม่เป็น null หรือไม่
-  const hasNotifications = notifications && notifications.some(noti => noti.noti_status == null);
+  const hasNotifications = notifications && notifications.some(noti => noti.noti_status == 'F');
 
   return (
     <View style={styles.container}>
@@ -84,9 +105,9 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
       />
 
       {/* ไอคอนที่อยู่มุมขวาล่าง */}
-      <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notiuser')}>
+      <TouchableOpacity style={styles.notificationIcon} onPress={handlePress}>
         <View style={styles.iconContainer}>
-          <Ionicons name="notifications-outline" size={25} color="#fff" />
+          <Ionicons name="notifications-outline" size={25} color="#fff"  />
           {hasNotifications && <View style={styles.redDot} />} 
         </View>
       </TouchableOpacity>
