@@ -15,116 +15,14 @@ import AddPetScreen from "./component/AddPetScreen";
 import MyPetInfo from "./component/MyPetInfo";
 import Notipet from "./component/Notipet";
 import Notiuser from "./component/Notiuser";
+import axios from 'axios';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const TabNavigator = ({ userToken, setUserToken }) => {
-  return (
-    <Tab.Navigator
-      initialRouteName="Breed"
-      key={userToken}
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName;
-
-          if (route.name === "Search") {
-            iconName = "search";
-          } else if (route.name === "Login") {
-            iconName = "log-in";
-          } else if (route.name === "UserInfo") {
-            iconName = "person";
-          } else if (route.name === "Breed" || route.name === "Mypet") {
-            iconName = "paw";
-          }
-          return <Icon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: "#FF9090",
-        tabBarInactiveTintColor: "#000000",
-      })}
-    >
-      <Tab.Screen
-        name="Breed"
-        component={BreedScreen}
-        options={{
-          tabBarLabel: "ข้อมูลสุนัข",
-          title: "ข้อมูลสุนัข",
-          headerTitleAlign: "center", // Center the title
-          headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
-          headerTintColor: "#fff", //
-          headerTitleStyle: { fontWeight: "bold" },
-        }} // Thai label for BreedScreen
-      />
-      <Tab.Screen
-        name="Search"
-        options={{ tabBarLabel: "ค้นหา" }} // Thai label for SearchScreen
-      >
-        {(props) => <SearchScreen {...props} userToken={userToken} />}
-      </Tab.Screen>
-
-      {userToken ? (
-        <>
-          <Tab.Screen
-            name="Mypet"
-            options={({ navigation }) => ({
-              tabBarLabel: "สัตว์เลี้ยงของฉัน",
-              title: "สัตว์เลี้ยงของฉัน",
-              headerTitleAlign: "center",
-              headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
-              headerTintColor: "#fff", // Set header text color
-              headerTitleStyle: { fontWeight: "bold" },
-              // เพิ่มไอคอนกระดิ่งแจ้งเตือน
-              headerRight: () => (
-                <Icon
-                  name="notifications-outline"
-                  size={25}
-                  color="#fff"
-                  style={{ marginRight: 15 }} // ปรับตำแหน่งของไอคอนให้อยู่ด้านขวา
-                  onPress={() => navigation.navigate('Notiuser')} // เมื่อกดแล้วไปหน้า Notiuser
-                />
-              ),
-            })}
-          >
-            {(props) => <MypetScreen {...props} userToken={userToken} />}
-          </Tab.Screen>
-
-          <Tab.Screen
-            name="UserInfo"
-            options={{
-              tabBarLabel: "ข้อมูลผู้ใช้",
-              title: "ข้อมูลผู้ใช้",
-              headerTitleAlign: "center", // Center the title
-              headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
-              headerTintColor: "#fff", //
-              headerTitleStyle: { fontWeight: "bold" },
-            }} // Thai label for UserInfoScreen
-          >
-            {(props) => (
-              <UserInfoScreen {...props} setUserToken={setUserToken} />
-            )}
-          </Tab.Screen>
-        </>
-      ) : (
-        <Tab.Screen
-          name="Login"
-          options={{
-            tabBarLabel: "หน้าล็อคอิน", // Thai label for LoginScreen
-            title: false,
-            headerTitleAlign: "center", // Center the title
-            headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
-            headerTintColor: "#fff", //
-          }}
-        >
-          {(props) => <LoginScreen {...props} handleLogin={setUserToken} />}
-        </Tab.Screen>
-      )}
-    </Tab.Navigator>
-  );
-};
-
 const App = () => {
+  const [notifications, setNotifications] = useState([]);
   const [userToken, setUserToken] = useState(null);
-
   useEffect(() => {
     const loadUserToken = async () => {
       const token = await AsyncStorage.getItem("userToken");
@@ -132,9 +30,42 @@ const App = () => {
         setUserToken(token);
       }
     };
-
-    loadUserToken();
+  
+    loadUserToken();  // เรียกใช้ loadUserToken เมื่อ component ถูก mount
   }, []);
+  
+  useEffect(() => {
+    const fetchNotifications = async (token) => {
+      try {
+        const response = await axios.get('http://192.168.3.194/dogcare/getnotiall.php', {
+          headers: {
+            Authorization: `Bearer ${token}`, // ส่ง token ผ่าน Authorization header
+          },
+        });
+  
+        if (Array.isArray(response.data)) {
+          setNotifications(response.data); // เก็บข้อมูลใน state
+        } else {
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+  
+    if (userToken) {
+      fetchNotifications(userToken); // เรียกข้อมูลครั้งแรก
+  
+      const intervalId = setInterval(() => {
+        fetchNotifications(userToken); // เรียกข้อมูลทุกๆ 5 วินาที
+      }, 10000);
+  
+      // ทำความสะอาดเมื่อ component unmount
+      return () => clearInterval(intervalId);
+    }
+  }, [userToken]);
+  
+  
+  
 
   return (
     <NavigationContainer>
@@ -145,6 +76,7 @@ const App = () => {
               {...props}
               userToken={userToken}
               setUserToken={setUserToken}
+              notifications={notifications}
             />
           )}
         </Stack.Screen>
@@ -152,8 +84,7 @@ const App = () => {
           {(props) => <LoginScreen {...props} handleLogin={setUserToken} />}
         </Stack.Screen>
         <Stack.Screen name="Notiuser" >
-          {(props) => <Notiuser {...props} userToken={userToken}
-              setUserToken={setUserToken}/>}
+          {(props) => <Notiuser {...props} notifications={notifications}/>}
         </Stack.Screen>
         <Stack.Screen
           name="StepRegister1"
@@ -220,5 +151,98 @@ const App = () => {
     </NavigationContainer>
   );
 };
+const TabNavigator = ({ userToken, setUserToken, notifications }) => {
+  return (
+    <Tab.Navigator
+      initialRouteName="Breed"
+      key={userToken}
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
 
+          if (route.name === "Search") {
+            iconName = "search";
+          } else if (route.name === "Login") {
+            iconName = "log-in";
+          } else if (route.name === "UserInfo") {
+            iconName = "person";
+          } else if (route.name === "Breed" || route.name === "Mypet") {
+            iconName = "paw";
+          }
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#FF9090",
+        tabBarInactiveTintColor: "#000000",
+      })}
+    >
+      <Tab.Screen
+        name="Breed"
+        component={BreedScreen}
+        options={{
+          tabBarLabel: "ข้อมูลสุนัข",
+          title: "ข้อมูลสุนัข",
+          headerTitleAlign: "center", // Center the title
+          headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+          headerTintColor: "#fff", //
+          headerTitleStyle: { fontWeight: "bold" },
+        }} // Thai label for BreedScreen
+      />
+      <Tab.Screen
+        name="Search"
+        options={{ tabBarLabel: "ค้นหา" }} // Thai label for SearchScreen
+      >
+        {(props) => <SearchScreen {...props} userToken={userToken} />}
+      </Tab.Screen>
+
+      {userToken ? (
+        <>
+          <Tab.Screen
+            name="Mypet"
+            options={({ navigation }) => ({
+              tabBarLabel: "สัตว์เลี้ยงของฉัน",
+              title: "สัตว์เลี้ยงของฉัน",
+              headerTitleAlign: "center",
+              headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+              headerTintColor: "#fff", // Set header text color
+              headerTitleStyle: { fontWeight: "bold" },
+              // เพิ่มไอคอนกระดิ่งแจ้งเตือน
+      
+            })}
+          >
+            {(props) => <MypetScreen {...props} userToken={userToken} notifications={notifications}/>}
+          </Tab.Screen>
+
+          <Tab.Screen
+            name="UserInfo"
+            options={{
+              tabBarLabel: "ข้อมูลผู้ใช้",
+              title: "ข้อมูลผู้ใช้",
+              headerTitleAlign: "center", // Center the title
+              headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+              headerTintColor: "#fff", //
+              headerTitleStyle: { fontWeight: "bold" },
+            }} // Thai label for UserInfoScreen
+          >
+            {(props) => (
+              <UserInfoScreen {...props} setUserToken={setUserToken} />
+            )}
+          </Tab.Screen>
+        </>
+      ) : (
+        <Tab.Screen
+          name="Login"
+          options={{
+            tabBarLabel: "หน้าล็อคอิน", // Thai label for LoginScreen
+            title: false,
+            headerTitleAlign: "center", // Center the title
+            headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+            headerTintColor: "#fff", //
+          }}
+        >
+          {(props) => <LoginScreen {...props} handleLogin={setUserToken} />}
+        </Tab.Screen>
+      )}
+    </Tab.Navigator>
+  );
+};
 export default App;

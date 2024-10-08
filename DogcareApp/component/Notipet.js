@@ -18,12 +18,12 @@ const NotiPet = ({ route }) => {
   
 
   const dayOptions = [
-    { label: 'Sunday', value: 'S' },
-    { label: 'Monday', value: 'M' },
-    { label: 'Tuesday', value: 'T' },
-    { label: 'Wednesday', value: 'W' },
+    { label: 'Sunday', value: 'Su' },
+    { label: 'Monday', value: 'Mo' },
+    { label: 'Tuesday', value: 'Tu' },
+    { label: 'Wednesday', value: 'We' },
     { label: 'Thursday', value: 'Th' },
-    { label: 'Friday', value: 'F' },
+    { label: 'Friday', value: 'Fr' },
     { label: 'Saturday', value: 'Sa' },
   ];
 

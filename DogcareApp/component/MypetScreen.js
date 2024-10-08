@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 
-const MypetScreen = ({ navigation, userToken }) => {
+const MypetScreen = ({ navigation, userToken, notifications }) => {
   const [userInfo, setUserInfo] = useState([]);
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
@@ -46,7 +46,7 @@ const MypetScreen = ({ navigation, userToken }) => {
         <FontAwesome name="user" size={100} color="gray" />
       )}
       <View style={styles.textContainer}>
-        <Text style={styles.petName}>{item.pet_id}</Text>
+        {/* ห่อหุ้มข้อความด้วย <Text> component */}
         <Text style={styles.petName}>{item.pet_name}</Text>
         <Text style={styles.petBreed}>สายพันธุ์: {item.breed_name}</Text>
       </View>
@@ -60,6 +60,9 @@ const MypetScreen = ({ navigation, userToken }) => {
       </View>
     );
   }
+
+  // เช็คว่ามีการแจ้งเตือนที่ noti_status ไม่เป็น null หรือไม่
+  const hasNotifications = notifications && notifications.some(noti => noti.noti_status == null);
 
   return (
     <View style={styles.container}>
@@ -79,6 +82,14 @@ const MypetScreen = ({ navigation, userToken }) => {
         }
         keyExtractor={(item, index) => index.toString()}
       />
+
+      {/* ไอคอนที่อยู่มุมขวาล่าง */}
+      <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notiuser')}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="notifications-outline" size={25} color="#fff" />
+          {hasNotifications && <View style={styles.redDot} />} 
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -123,6 +134,25 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 14,
     color: 'gray',
+  },
+  notificationIcon: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+  },
+  iconContainer: {
+    backgroundColor: '#FF9090', // สีพื้นหลังของไอคอน
+    borderRadius: 30, // ทำให้ไอคอนกลม
+    padding: 10, // เพิ่ม padding เพื่อให้มีระยะห่าง
+  },
+  redDot: {
+    position: 'absolute',
+    right: 11,
+    top: 10,
+    width: 10,
+    height: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
   },
 });
 
