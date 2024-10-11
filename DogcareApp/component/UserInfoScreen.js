@@ -19,7 +19,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         setToken(storedToken); // Set token state
 
         if (storedToken) {
-          const response = await axios.get('http://192.168.3.194/dogcare/userinfo.php', {
+          const response = await axios.get('http://10.10.50.141/dogcare/userinfo.php', {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -59,7 +59,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
     if (isEditing) {
       try {
         const response = await axios.post(
-          'http://192.168.3.194/dogcare/edituserinfo.php',
+          'http://10.10.50.141/dogcare/edituserinfo.php',
           {
             firstName: userInfo.firstName,
             lastName: userInfo.lastName,

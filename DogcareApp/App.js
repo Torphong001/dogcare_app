@@ -41,7 +41,7 @@ const App = () => {
   useEffect(() => {
     const fetchNotifications = async (token) => {
       try {
-          const response = await axios.get('http://192.168.3.194/dogcare/getnotiall.php', {
+          const response = await axios.get('http://10.10.50.141/dogcare/getnotiall.php', {
               headers: {
                   Authorization: `Bearer ${token}`,
               },
@@ -61,7 +61,7 @@ const App = () => {
                       await sendLineNotification(userToken,notification);
   
                       // อัปเดต noti_status เป็น F
-                      await axios.post('http://192.168.3.194/dogcare/updatenoti.php', {
+                      await axios.post('http://10.10.50.141/dogcare/updatenoti.php', {
                           noti_id: notification.noti_id,
                           noti_status: 'F',
                       });
@@ -87,7 +87,7 @@ const App = () => {
 const sendLineNotification = async (userToken, notification) => {
   try {
       // Fetch user_id_line from your API
-      const userInfoResponse = await axios.get("http://192.168.3.194/dogcare/getuser_lineid.php", {
+      const userInfoResponse = await axios.get("http://10.10.50.141/dogcare/getuser_lineid.php", {
           headers: {
               Authorization: `Bearer ${userToken}`
           }
@@ -101,7 +101,7 @@ const sendLineNotification = async (userToken, notification) => {
       }
       console.log(notification.noti_pet_id)
       // Fetch pet details using the notification's pet ID
-      const petResponse = await axios.get(`http://192.168.3.194/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
+      const petResponse = await axios.get(`http://10.10.50.141/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
       const pet = petResponse.data;
 
       console.log(pet)

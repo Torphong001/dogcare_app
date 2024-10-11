@@ -1,55 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { View, Button, Image, StyleSheet, Alert, Text } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
-import Tflite from 'tflite-react-native'; // นำเข้าไลบรารี TFLite
+import React, { useState } from "react";
+import { View, Button, Image, StyleSheet, Alert, Text, Modal, TouchableOpacity } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import axios from "axios";
+import { Buffer } from "buffer";
+import { MaterialIcons } from '@expo/vector-icons';
 
 const SearchScreen = () => {
   const [imageUri, setImageUri] = useState(null);
   const [showBreedButton, setShowBreedButton] = useState(false);
-  const [topBreed, setTopBreed] = useState(null);
-  const [tflite, setTflite] = useState(null);
+  const [topBreeds, setTopBreeds] = useState([]);
+  const [selectedBreed, setSelectedBreed] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const classNames = [
-    "เกรย์ฮาวด์", "โกลเด้น รีทรีฟเวอร์", "คอลลี่", "ชเนาเซอร์", "ชิวาวา", "ชิสุห์", 
-    "เชา เชา", "ซามอยด์", "ไซบีเรียน ฮัสกี้", "โดเบอร์แมน", "บอร์เดอร์ คอลลี่", 
-    "บีเกิ้ล", "เบลเยี่ยมมาลินอยส์", "เบอร์นีสเมาน์เทนด็อก", "ปอมเมอเรเนียน", "ปั๊ก", 
-    "ปักกิ่ง", "พอยเตอร์", "พุดเดิ้ล", "ร็อตไวเลอร์", "ลาบราดอร์รีทรีฟเวอร์", "วิปเพ็ท", 
-    "อลาสกัน มาลามิวท์", "ไอริช วูล์ฟฮาวด์"
-  ];
-
-  const initializeTflite = async () => {
-    const tfliteInstance = new Tflite();
-    setTflite(tfliteInstance); // ตั้งค่า tflite instance
-
-    // ดาวน์โหลดโมเดลและเลเบล
-
-  
-    await modelAsset.downloadAsync();
-    await labelsAsset.downloadAsync();
-    
-    tfliteInstance.loadModel({
-      model: modelAsset.localUri || modelAsset.uri,
-      labels: labelsAsset.localUri || labelsAsset.uri,
-    }, (err, res) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log('Model Loaded', res);
-      }
-    });
-  };
-  
-  useEffect(() => {
-    initializeTflite();
-  }, []);
-
+  // ฟังก์ชันสำหรับเลือกภาพ
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      Alert.alert('ต้องอนุญาตการเข้าถึงคลังภาพก่อนถึงจะเลือกภาพได้');
+      Alert.alert("ต้องอนุญาตการเข้าถึงคลังภาพก่อนถึงจะเลือกภาพได้");
       return;
     }
 
@@ -60,71 +29,102 @@ const SearchScreen = () => {
       quality: 1,
     });
 
-    if (!result.cancelled && result.assets) {
+    if (!result.canceled && result.assets) {
       setImageUri(result.assets[0].uri);
       setShowBreedButton(true);
+      setTopBreeds([]); // รีเซ็ตผลการระบุเมื่อเลือกภาพใหม่
     }
   };
 
-  const processImage = async (uri) => {
-    try {
-      const imgB64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      return imgB64;
-    } catch (error) {
-      console.error('เกิดข้อผิดพลาดในการประมวลผลภาพ:', error);
-      Alert.alert('เกิดข้อผิดพลาดในการประมวลผลภาพ: ' + error.message);
-      return null;
-    }
-  };
-
+  // ฟังก์ชันสำหรับตรวจจับสายพันธุ์
   const handleBreedDetection = async () => {
-    if (!tflite) {
-      Alert.alert('โมเดลยังไม่ได้โหลด');
+    if (!imageUri) {
+      Alert.alert("กรุณาเลือกภาพก่อน");
       return;
     }
 
-    Alert.alert("กำลังระบุสายพันธุ์จากภาพที่เลือก...");
+    try {
+      const imgData = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-    const imgB64 = await processImage(imageUri);
-    if (!imgB64) return;
+      const response = await axios.post(
+        "https://dogpredic.cognitiveservices.azure.com/customvision/v3.0/Prediction/49504ade-0b92-49ef-abe8-ee1b7d3c2066/classify/iterations/Iteration1/image",
+        Buffer.from(imgData, "base64"),
+        {
+          headers: {
+            "Prediction-Key": "d6a8928da71147899d1d40a58d428238",
+            "Content-Type": "application/octet-stream",
+          },
+        }
+      );
 
-    tflite.runModelOnImage({
-      path: imageUri,       // ใช้ path ของภาพ
-      imageMean: 0,
-      imageStd: 255,
-      numResults: 3,        // จำนวนผลลัพธ์ที่ต้องการ
-      threshold: 0.05       // กำหนด threshold สำหรับการคาดการณ์
-    }, (err, res) => {
-      if (err) {
-        console.error('Error during prediction:', err);
-        Alert.alert('เกิดข้อผิดพลาดระหว่างการคาดการณ์: ' + err.message);
-      } else {
-        const results = res.map((prediction) => ({
-          name: classNames[prediction.index],
-          percentage: (prediction.confidence * 100).toFixed(2),
-        }));
-        setTopBreed(results[0]); // ตั้งค่า topBreed เป็นผลลัพธ์ตัวแรก
-        Alert.alert('ผลลัพธ์', JSON.stringify(results));
-      }
-    });
+      const predictions = response.data.predictions;
+      const results = predictions.map((prediction) => ({
+        name: prediction.tagName,
+        percentage: (prediction.probability * 100).toFixed(2),
+      }));
+
+      setTopBreeds(results.sort((a, b) => b.percentage - a.percentage).slice(0, 3));
+    } catch (error) {
+      console.error("Error during prediction:", error);
+    }
+  };
+
+  // ฟังก์ชันสำหรับแสดงรายละเอียดพันธุ์
+  const handleBreedDetails = async (breedname) => {
+    try {
+      const response = await axios.post(
+        "http://10.10.50.141/dogcare/getbreedpredic.php",
+        { breed_name: breedname }
+      );
+      const breedData = response.data;
+
+      setSelectedBreed(breedData);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error fetching breed details:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Button title="เลือกรูปภาพ" onPress={pickImage} />
-      {imageUri && (
-        <Image source={{ uri: imageUri }} style={styles.image} />
-      )}
+      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
       {showBreedButton && (
         <Button title="ระบุสายพันธุ์" onPress={handleBreedDetection} />
       )}
-      {topBreed && (
+      {topBreeds.length > 0 && (
         <View>
-          <Text>{`ผลการระบุ: ${topBreed.name}, ${topBreed.percentage}%`}</Text>
+          <Text>ผลการระบุ:</Text>
+          {topBreeds.map((breed, index) => (
+            <View key={index} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text>{`${index + 1}. ${breed.name}, ${breed.percentage}%`}</Text>
+              <TouchableOpacity
+                onPress={() => handleBreedDetails(breed.name)}
+                style={{ marginLeft: 8 }}
+              >
+                <MaterialIcons name="search" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
       )}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>ข้อมูลพันธุ์สุนัข</Text>
+            <Text>ชื่อพันธุ์: {selectedBreed.breed_name}</Text>
+            <Text>ID พันธุ์: {selectedBreed.breed_id}</Text>
+            <Button title="ปิด" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -132,13 +132,15 @@ const SearchScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   image: {
     width: 300,
     height: 300,
     marginTop: 20,
+    borderRadius: 10,
   },
 });
 

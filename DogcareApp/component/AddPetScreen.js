@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Button, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Import from the correct package
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
 import { useFocusEffect } from '@react-navigation/native';
 
 const AddPetScreen = ({ route, navigation, userToken }) => {
@@ -10,21 +11,14 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
   const [petWeight, setPetWeight] = useState('');
   const [petHeight, setPetHeight] = useState('');
   const [userId, setUserId] = useState('');
-  const [petBd, setPetBd] = useState({
-    day: '01',
-    month: '01',
-    year: '2000',
-  });
+  const [petBd, setPetBd] = useState(new Date()); // Set current date as default
   const [petSex, setPetSex] = useState('M'); // Default to 'M'
   const [breeds, setBreeds] = useState([]);
-  const [days, setDays] = useState(Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')));
-  const [months, setMonths] = useState(Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')));
-  const [years, setYears] = useState(Array.from({ length: 100 }, (_, i) => (new Date().getFullYear() - i).toString()));
+  const [showDatePicker, setShowDatePicker] = useState(false); // Control the visibility of DatePicker
 
   useEffect(() => {
     // Fetch breeds from the API
-    fetch('http://192.168.3.194/dogcare/breedinfo.php')
-
+    fetch('http://10.10.50.141/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -48,14 +42,14 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       setBreedId('');
       setPetWeight('');
       setPetHeight('');
-      setPetBd({ day: '01', month: '01', year: '2000' });
+      setPetBd(new Date()); // Reset to current date
       setPetSex('M');
     }, [])
   );
 
   const handleAddPet = async () => {
     // Validate required fields
-    if (!petName || !petPic || !breedId || !petWeight || !petHeight || !petBd.day || !petBd.month || !petBd.year) {
+    if (!petName || !petPic || !breedId || !petWeight || !petHeight) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นทั้งหมด');
       return;
     }
@@ -67,13 +61,13 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       breedId,
       petWeight,
       petHeight,
-      petBd: `${petBd.year}-${petBd.month}-${petBd.day}`, // Format date for database
+      petBd: petBd.toISOString().split('T')[0], // Format date for database
       petSex,
       userId: userToken, // Use userToken as userId
     };
 
     try {
-      const response = await fetch('http://192.168.3.194/dogcare/addpet.php', {
+      const response = await fetch('http://10.10.50.141/dogcare/addpet.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,12 +75,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
         body: JSON.stringify(petData),
       });
 
-      // Read and log the response text
-      const responseText = await response.text();
-      console.log('Response Text:', responseText);
-
-      // Try parsing JSON
-      const result = JSON.parse(responseText);
+      const result = await response.json();
 
       if (response.ok && result.success) {
         Alert.alert('สำเร็จ', 'สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
@@ -147,38 +136,24 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
         <Text style={styles.unit}>นิ้ว</Text>
       </View>
 
-      {/* Date Picker for Day, Month, and Year */}
+      {/* Date Picker */}
       <View style={styles.datePickerContainer}>
         <Text style={styles.label}>วันเกิดของสัตว์เลี้ยง:</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={petBd.day}
-            style={styles.picker}
-            onValueChange={(itemValue) => setPetBd(prev => ({ ...prev, day: itemValue }))}
-          >
-            {days.map(day => (
-              <Picker.Item key={day} label={day} value={day} />
-            ))}
-          </Picker>
-          <Picker
-            selectedValue={petBd.month}
-            style={styles.picker}
-            onValueChange={(itemValue) => setPetBd(prev => ({ ...prev, month: itemValue }))}
-          >
-            {months.map(month => (
-              <Picker.Item key={month} label={month} value={month} />
-            ))}
-          </Picker>
-          <Picker
-            selectedValue={petBd.year}
-            style={styles.picker}
-            onValueChange={(itemValue) => setPetBd(prev => ({ ...prev, year: itemValue }))}
-          >
-            {years.map(year => (
-              <Picker.Item key={year} label={year} value={year} />
-            ))}
-          </Picker>
-        </View>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+          <Text style={styles.dateButtonText}>{petBd.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={petBd}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              const currentDate = selectedDate || petBd;
+              setShowDatePicker(false);
+              setPetBd(currentDate);
+            }}
+          />
+        )}
       </View>
 
       {/* Pet Sex Radio Buttons */}
@@ -230,16 +205,15 @@ const styles = StyleSheet.create({
   datePickerContainer: {
     marginBottom: 12,
   },
-  pickerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  dateButton: {
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    alignItems: 'center',
   },
-  picker: {
-    flex: 1,
-    height: 40,
-    marginHorizontal: 4,
-    borderColor: 'gray',
-    borderWidth: 1,
+  dateButtonText: {
+    fontSize: 16,
+    color: '#333',
   },
   radioContainer: {
     flexDirection: 'row',
@@ -258,8 +232,8 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   radioSelected: {
-    color: 'blue',
     fontWeight: 'bold',
+    color: 'black',
   },
 });
 

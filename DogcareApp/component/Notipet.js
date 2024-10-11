@@ -30,7 +30,7 @@ const NotiPet = ({ route }) => {
   useEffect(() => {
     const fetchPetNotification = async () => {
       try {
-        const response = await axios.post('http://192.168.3.194/dogcare/notipet.php', { pet_id });
+        const response = await axios.post('http://10.10.50.141/dogcare/notipet.php', { pet_id });
         if (response.data.success) {
           setNotifications(response.data.notifications);
         } else {
@@ -67,7 +67,7 @@ const NotiPet = ({ route }) => {
       formattedDay = notiSpecificDays.join('|');
     }
     try {
-      const response = await axios.post('http://192.168.3.194/dogcare/addnoti.php', {
+      const response = await axios.post('http://10.10.50.141/dogcare/addnoti.php', {
         noti_name: notiName,
         noti_time: formattedTime,
         noti_day: formattedDay,
@@ -102,7 +102,7 @@ const NotiPet = ({ route }) => {
           text: 'Delete',
           onPress: async () => {
             try {
-              const response = await axios.post('http://192.168.3.194/dogcare/deletenoti.php', {
+              const response = await axios.post('http://10.10.50.141/dogcare/deletenoti.php', {
                 noti_id,
               });
 

@@ -15,7 +15,7 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.3.194/dogcare/register.php', {
+      const response = await fetch('http://10.10.50.141/dogcare/register.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
