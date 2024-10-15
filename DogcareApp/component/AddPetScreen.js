@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Button, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Image, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
+import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 const AddPetScreen = ({ route, navigation, userToken }) => {
   const [petName, setPetName] = useState('');
-  const [petPic, setPetPic] = useState('');
+  const [petPic, setPetPic] = useState(null); // เปลี่ยนเป็น null
   const [breedId, setBreedId] = useState('');
   const [petWeight, setPetWeight] = useState('');
   const [petHeight, setPetHeight] = useState('');
-  const [userId, setUserId] = useState('');
-  const [petBd, setPetBd] = useState(new Date()); // Set current date as default
-  const [petSex, setPetSex] = useState('M'); // Default to 'M'
+  const [petBd, setPetBd] = useState(new Date());
+  const [petSex, setPetSex] = useState('M');
   const [breeds, setBreeds] = useState([]);
-  const [showDatePicker, setShowDatePicker] = useState(false); // Control the visibility of DatePicker
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null); 
 
   useEffect(() => {
-    // Fetch breeds from the API
     fetch('http://192.168.3.82/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
@@ -36,47 +36,49 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Reset all fields when screen is focused
       setPetName('');
-      setPetPic('');
+      setPetPic(null);
       setBreedId('');
       setPetWeight('');
       setPetHeight('');
-      setPetBd(new Date()); // Reset to current date
+      setPetBd(new Date());
       setPetSex('M');
     }, [])
   );
 
   const handleAddPet = async () => {
-    // Validate required fields
-    if (!petName || !petPic || !breedId || !petWeight || !petHeight) {
+    if (!petName || !breedId || !petWeight || !petHeight) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นทั้งหมด');
       return;
     }
-
-    // Prepare the data to send
-    const petData = {
-      petName,
-      petPic,
-      breedId,
-      petWeight,
-      petHeight,
-      petBd: petBd.toISOString().split('T')[0], // Format date for database
-      petSex,
-      userId: userToken, // Use userToken as userId
-    };
-
+  
+    // Prepare FormData to send
+    const formData = new FormData();
+    formData.append('petName', petName);
+    formData.append('breedId', breedId);
+    formData.append('petWeight', petWeight);
+    formData.append('petHeight', petHeight);
+    formData.append('petBd', petBd.toISOString().split('T')[0]);
+    formData.append('petSex', petSex);
+    formData.append('userId', userToken);
+  
+    // Append petPic if an image has been selected
+    if (selectedImage) {
+      formData.append('picture', {
+        uri: selectedImage.uri,
+        name: selectedImage.fileName,
+        type: selectedImage.mimeType,
+      });
+    }
+  
     try {
       const response = await fetch('http://192.168.3.82/dogcare/addpet.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(petData),
+        body: formData, // Send FormData directly
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok && result.success) {
         Alert.alert('สำเร็จ', 'สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
         navigation.navigate('Mypet');
@@ -86,6 +88,29 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     } catch (error) {
       console.error('Add Pet error:', error);
       Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดขณะเพิ่มสัตว์เลี้ยง');
+    }
+  };
+  
+
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
+      setPetPic(result.assets[0].uri); // Update petPic with the selected image URI
     }
   };
 
@@ -98,12 +123,16 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
         value={petName}
         onChangeText={setPetName}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="ลิงก์ภาพสัตว์เลี้ยง"
-        value={petPic}
-        onChangeText={setPetPic}
-      />
+      
+      {/* Image Picker */}
+      <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+        {selectedImage ? (
+          <Image source={{ uri: selectedImage.uri }} style={styles.image} />
+        ) : (
+          <Text style={styles.imagePlaceholder}>เลือกภาพสัตว์เลี้ยง</Text>
+        )}
+      </TouchableOpacity>
+
       {/* Breed Selector */}
       <Picker
         selectedValue={breedId}
@@ -115,9 +144,10 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
           <Picker.Item key={breed.breed_id} label={breed.breed_name} value={breed.breed_id} />
         ))}
       </Picker>
+
       <View style={styles.inputContainer}>
         <TextInput
-          style={[styles.input, { paddingRight: 60 }]} // Make room for unit text
+          style={[styles.input, { paddingRight: 60 }]}
           placeholder="น้ำหนักสัตว์เลี้ยง"
           value={petWeight}
           onChangeText={setPetWeight}
@@ -127,7 +157,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       </View>
       <View style={styles.inputContainer}>
         <TextInput
-          style={[styles.input, { paddingRight: 60 }]} // Make room for unit text
+          style={[styles.input, { paddingRight: 60 }]}
           placeholder="ความสูงสัตว์เลี้ยง"
           value={petHeight}
           onChangeText={setPetHeight}
@@ -190,6 +220,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 8,
   },
+  imagePicker: {
+    backgroundColor: '#f0f0f0',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderColor: 'gray',
+    borderWidth: 1,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    color: 'gray',
+  },
   inputContainer: {
     position: 'relative',
     marginBottom: 12,
@@ -206,34 +253,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dateButton: {
-    padding: 10,
     backgroundColor: '#f0f0f0',
+    padding: 10,
     borderRadius: 5,
-    alignItems: 'center',
   },
   dateButtonText: {
     fontSize: 16,
-    color: '#333',
   },
   radioContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-around',
     marginBottom: 12,
   },
-  label: {
-    marginRight: 10,
-    fontSize: 16,
-  },
   radioOption: {
-    marginHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   radioText: {
     fontSize: 16,
-    color: 'gray',
+    marginHorizontal: 5,
   },
   radioSelected: {
     fontWeight: 'bold',
-    color: 'black',
+    color: '#007BFF',
   },
 });
 

@@ -44,7 +44,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
       onPress={() => navigation.navigate('MyPetInfo', { pet: item })}
     >
       {item.pet_pic ? (
-        <Image source={{ uri: item.pet_pic }} style={styles.image} />
+        <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${item.pet_pic}` }} style={styles.image} />
       ) : (
         <FontAwesome name="user" size={100} color="gray" />
       )}

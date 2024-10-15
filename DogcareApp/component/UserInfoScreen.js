@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
-const { width, height } = Dimensions.get('window'); // Get screen dimensions
+const { width, height } = Dimensions.get('window');
 
 const UserInfoScreen = ({ navigation, setUserToken }) => {
   const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' });
+  const [originalUserInfo, setOriginalUserInfo] = useState({}); // Store original user info
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null); // Track token state
-  const [isEditing, setIsEditing] = useState(false); // Track editing state
+  const [token, setToken] = useState(null); 
+  const [isEditing, setIsEditing] = useState(false); 
+  const [selectedImage, setSelectedImage] = useState(null); 
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('userToken');
-        setToken(storedToken); // Set token state
+        setToken(storedToken);
 
         if (storedToken) {
           const response = await axios.get('http://192.168.3.82/dogcare/userinfo.php', {
@@ -29,6 +32,13 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             console.error(response.data.error);
           } else {
             setUserInfo({
+              firstName: response.data.firstname,
+              lastName: response.data.lastname,
+              tel: response.data.tel,
+              line_id: response.data.line_id,
+              picture: response.data.picture,
+            });
+            setOriginalUserInfo({
               firstName: response.data.firstname,
               lastName: response.data.lastname,
               tel: response.data.tel,
@@ -52,32 +62,75 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userToken');
     setUserToken(null);
-    navigation.navigate('Login'); // Navigate to Login screen after logout
+    navigation.navigate('Login'); 
   };
 
   const handleEditSave = async () => {
     if (isEditing) {
       try {
+        const formData = new FormData();
+        formData.append('firstName', userInfo.firstName);
+        formData.append('lastName', userInfo.lastName);
+        formData.append('tel', userInfo.tel);
+        formData.append('line_id', userInfo.line_id);
+  
+        formData.append('picture', {
+          uri: selectedImage.uri,
+          name: selectedImage.fileName,
+          type: selectedImage.mimeType,
+        });
+        console.log(selectedImage);
         const response = await axios.post(
           'http://192.168.3.82/dogcare/edituserinfo.php',
-          {
-            firstName: userInfo.firstName,
-            lastName: userInfo.lastName,
-            tel: userInfo.tel,
-            line_id: userInfo.line_id,
-          },
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
             },
           }
         );
-        setIsEditing(false); // Switch back to non-editing mode after saving
+  
+        console.log(response.data);
+        if (response.data.success) {
+          setIsEditing(false);
+        } else {
+          console.error('Error from API:', response.data.error);
+        }
       } catch (error) {
-        console.error('Failed to update user info:', error);
+        console.error('Failed to update user info:', error.response ? error.response.data : error.message);
       }
     } else {
-      setIsEditing(true); // Enable editing
+      setIsEditing(true);
+    }
+  };
+  
+  
+  
+  const handleCancelEdit = () => {
+    setUserInfo(originalUserInfo); // Reset the changes
+    setSelectedImage(null); // Clear the selected image
+    setIsEditing(false); // Exit edit mode
+  };
+
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+    }
+  
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All, // เปลี่ยนเป็น All เพื่อรองรับทุกประเภท
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
     }
   };
 
@@ -92,21 +145,41 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={handleEditSave}
-        >
-          <FontAwesome
-            name={isEditing ? "check" : "pencil"}
-            size={20}
-            color="#fff"
-          />
+        <View style={styles.editButtonsContainer}>
+          <TouchableOpacity style={styles.editButton} onPress={handleEditSave}>
+            <FontAwesome name={isEditing ? 'check' : 'pencil'} size={20} color="#fff" />
+          </TouchableOpacity>
+
+          {isEditing && (
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelEdit}>
+              <FontAwesome name="times" size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        <TouchableOpacity onPress={isEditing ? pickImage : null}>
+          {selectedImage ? (
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={[styles.image, isEditing && styles.imageEditing]}
+            />
+          ) : (
+            userInfo.picture ? (
+              <Image
+                source={{ uri: `http://192.168.3.82/dogcare/uploads/${userInfo.picture}` }}
+                style={[styles.image, isEditing && styles.imageEditing]}
+              />
+            ) : (
+              <FontAwesome name="user" size={100} color="gray" />
+            )
+          )}
+          {isEditing && (
+            <View style={styles.iconOverlay}>
+              <FontAwesome name="pencil" size={30} color="#fff" />
+            </View>
+          )}
         </TouchableOpacity>
-        {userInfo.picture ? (
-          <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${userInfo.picture}` }} style={styles.image} />
-        ) : (
-          <FontAwesome name="user" size={100} color="gray" />
-        )}
+
         <View style={styles.infoContainer}>
           <Text style={styles.label}>ชื่อ</Text>
           <TextInput
@@ -141,6 +214,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             onChangeText={(text) => setUserInfo({ ...userInfo, line_id: text })}
           />
         </View>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>ออกจากระบบ</Text>
         </TouchableOpacity>
@@ -157,7 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
   innerContainer: {
-    width: width * 0.9, // Container width as a percentage of screen width
+    width: width * 0.9,
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 20,
@@ -166,10 +240,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
   },
-  editButton: {
+  editButtonsContainer: {
     position: 'absolute',
     top: 10,
     right: 10,
+    flexDirection: 'row',
+  },
+  editButton: {
+    backgroundColor: '#FF9090',
+    borderRadius: 20,
+    padding: 10,
+    marginRight: 10,
+  },
+  cancelButton: {
     backgroundColor: '#FF9090',
     borderRadius: 20,
     padding: 10,
@@ -196,25 +279,34 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    backgroundColor: '#d9d9d9',
-    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
     padding: 10,
-    fontSize: 16,
-    marginBottom: 10,
-    width: '100%',
+    marginBottom: 15,
+  },
+  inputEditing: {
+    backgroundColor: '#fff',
+    borderColor: '#ff7f7f',
+    borderWidth: 1,
+  },
+  image: {
+    width: 120,
+    height: 120,
+    borderRadius: 75,
+    marginBottom: 20,
     borderWidth: 2,
     borderColor: '#FF9090',
   },
-  inputEditing: {
-    backgroundColor: '#ffffff',
+  imageEditing: {
+    
   },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    borderWidth: 5,
-    borderColor: '#FF9090',
+  iconOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 25,
+    padding: 5,
   },
 });
 

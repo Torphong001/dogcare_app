@@ -156,7 +156,7 @@ const MyPetInfo = ({ route, navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: pet.pet_pic }} style={styles.petImage} />
+      <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${pet.pet_pic}` }} style={styles.petImage} />
 
       <View style={styles.infoContainer}>
         <Text style={styles.labelCentered}>ชื่อ:</Text>
