@@ -29,13 +29,13 @@ const MyPetInfo = ({ route, navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [updatedPet, setUpdatedPet] = useState({
-    pet_name: pet.pet_name,
-    pet_picture: pet.pet_picture,
+    pet_name: petinfo.pet_name,
+    pet_picture: petinfo.pet_picture,
     breed_name: pet.breed_name,
-    pet_weight: pet.pet_weight?.toString() ?? "0", // Default to '0' if null
-    pet_height: pet.pet_height?.toString() ?? "0",
-    pet_sex: pet.pet_sex,
-    pet_bd: pet.pet_bd,
+    pet_weight: petinfo.pet_weight?.toString() ?? "0", // Default to '0' if null
+    pet_height: petinfo.pet_height?.toString() ?? "0",
+    pet_sex: petinfo.pet_sex,
+    pet_bd: petinfo.pet_bd,
   });
   const [selectedImage, setSelectedImage] = useState(null); 
 
@@ -70,13 +70,13 @@ const MyPetInfo = ({ route, navigation }) => {
 
   const handleCancel = () => {
     setUpdatedPet({
-      pet_name: pet.pet_name,
-      pet_picture: pet.pet_picture,
-      breed_name: pet.breed_name,
-      pet_weight: pet.pet_weight.toString(),
-      pet_height: pet.pet_height.toString(),
-      pet_sex: pet.pet_sex,
-      pet_bd: pet.pet_bd,
+      pet_name: petinfo.pet_name,
+      pet_picture: petinfo.pet_picture,
+      breed_name: petinfo.breed_name,
+      pet_weight: petinfo.pet_weight.toString(),
+      pet_height: petinfo.pet_height.toString(),
+      pet_sex: petinfo.pet_sex,
+      pet_bd: petinfo.pet_bd,
     });
     setSelectedImage(null); // Clear the selected image
     setIsEditing(false);
@@ -127,7 +127,7 @@ const MyPetInfo = ({ route, navigation }) => {
         Alert.alert("Success", "Pet information updated successfully!");
         setIsEditing(false);
         const updatedPetResponse = await axios.get(`http://192.168.3.82/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
-        setUpdatedPet(updatedPetResponse.data);
+        setPetinfo(updatedPetResponse.data);
       } else {
         Alert.alert("Error", "Failed to update pet information.");
       }
@@ -199,7 +199,7 @@ const MyPetInfo = ({ route, navigation }) => {
           ) : (
             pet.pet_pic ? (
               <Image
-                source={{ uri: `http://192.168.3.82/dogcare/uploads/${pet.pet_pic}` }}
+                source={{ uri: `http://192.168.3.82/dogcare/uploads/${petinfo.pet_pic}` }}
                 style={[styles.petImage, isEditing && styles.imageEditing]}
               />
             ) : (
@@ -223,7 +223,7 @@ const MyPetInfo = ({ route, navigation }) => {
             }
           />
         ) : (
-          <Text style={styles.valueCentered}>{pet.pet_name}</Text>
+          <Text style={styles.valueCentered}>{petinfo.pet_name}</Text>
         )}
 
         <Text style={styles.label}>สายพันธุ์:</Text>
@@ -256,7 +256,7 @@ const MyPetInfo = ({ route, navigation }) => {
             </RadioButton.Group>
           ) : (
             <Text style={styles.value}>
-              {pet.pet_sex === "M" ? "ชาย" : pet.pet_sex === "F" ? "หญิง" : "ไม่ระบุ"}
+              {petinfo.pet_sex === "M" ? "ชาย" : petinfo.pet_sex === "F" ? "หญิง" : "ไม่ระบุ"}
             </Text>
           )}
         </View>
@@ -279,7 +279,7 @@ const MyPetInfo = ({ route, navigation }) => {
                 )}
               </>
             ) : (
-              <Text style={styles.value}>{calculateAge(pet.pet_bd)}</Text>
+              <Text style={styles.value}>{calculateAge(petinfo.pet_bd)}</Text>
             )}
           </View>
         </View>
@@ -297,7 +297,7 @@ const MyPetInfo = ({ route, navigation }) => {
                 keyboardType="numeric"
               />
             ) : (
-              <Text style={styles.value}>{pet.pet_weight} กก.</Text>
+              <Text style={styles.value}>{petinfo.pet_weight} กก.</Text>
             )}
           </View>
           <View style={styles.inlineItem}>
@@ -312,7 +312,7 @@ const MyPetInfo = ({ route, navigation }) => {
                 keyboardType="numeric"
               />
             ) : (
-              <Text style={styles.value}>{pet.pet_height} นิ้ว</Text>
+              <Text style={styles.value}>{petinfo.pet_height} นิ้ว</Text>
             )}
           </View>
         </View>
