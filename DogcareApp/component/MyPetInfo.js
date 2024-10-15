@@ -10,15 +10,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import moment from "moment";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { RadioButton } from 'react-native-paper'; // นำเข้า RadioButton
+import { FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 const MyPetInfo = ({ route, navigation }) => {
   const { pet } = route.params;
+  const [petinfo, setPetinfo] = useState(pet);
   const [modalVisible, setModalVisible] = useState(false);
   const [breedInfo, setBreedInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -26,23 +30,14 @@ const MyPetInfo = ({ route, navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [updatedPet, setUpdatedPet] = useState({
     pet_name: pet.pet_name,
+    pet_picture: pet.pet_picture,
     breed_name: pet.breed_name,
     pet_weight: pet.pet_weight?.toString() ?? "0", // Default to '0' if null
     pet_height: pet.pet_height?.toString() ?? "0",
     pet_sex: pet.pet_sex,
     pet_bd: pet.pet_bd,
   });
-
-  useEffect(() => {
-    setUpdatedPet({
-      pet_name: pet.pet_name,
-      breed_name: pet.breed_name,
-      pet_weight: pet.pet_weight?.toString() ?? "0", // Default to '0' if null
-      pet_height: pet.pet_height?.toString() ?? "0",
-      pet_sex: pet.pet_sex,
-      pet_bd: pet.pet_bd,
-    });
-  }, [pet]);
+  const [selectedImage, setSelectedImage] = useState(null); 
 
   const calculateAge = (birthDate) => {
     const birthMoment = moment(birthDate, "YYYY-MM-DD");
@@ -76,12 +71,14 @@ const MyPetInfo = ({ route, navigation }) => {
   const handleCancel = () => {
     setUpdatedPet({
       pet_name: pet.pet_name,
+      pet_picture: pet.pet_picture,
       breed_name: pet.breed_name,
       pet_weight: pet.pet_weight.toString(),
       pet_height: pet.pet_height.toString(),
       pet_sex: pet.pet_sex,
       pet_bd: pet.pet_bd,
     });
+    setSelectedImage(null); // Clear the selected image
     setIsEditing(false);
   };
   const showDatePickerHandler = () => {
@@ -99,16 +96,33 @@ const MyPetInfo = ({ route, navigation }) => {
   };
 
   const handleSave = async () => {
-    console.log(updatedPet);
     try {
+      const formData = new FormData();
+      formData.append("pet_id", pet.pet_id);
+      formData.append("pet_name", updatedPet.pet_name);
+      formData.append("breed_name", updatedPet.breed_name);
+      formData.append("pet_weight", updatedPet.pet_weight?.toString() ?? "0"); // แปลงเป็น string หรือใช้ค่าเริ่มต้น '0'
+      formData.append("pet_height", updatedPet.pet_height?.toString() ?? "0");
+      formData.append("pet_bd", updatedPet.pet_bd);
+      formData.append("pet_sex", updatedPet.pet_sex);
+      if (selectedImage) {
+      formData.append('picture', {
+        uri: selectedImage.uri,
+        name: selectedImage.fileName,
+        type: selectedImage.mimeType,
+      });
+    }
+    console.log(formData);
       const response = await axios.post(
         "http://192.168.3.82/dogcare/editpetinfo.php",
+        formData,
         {
-          pet_id: pet.pet_id,
-          ...updatedPet,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
-
+  
       if (response.data.success) {
         Alert.alert("Success", "Pet information updated successfully!");
         setIsEditing(false);
@@ -122,6 +136,7 @@ const MyPetInfo = ({ route, navigation }) => {
       Alert.alert("Error", "An error occurred while updating pet information.");
     }
   };
+  
 
   const handleDelete = async () => {
     Alert.alert(
@@ -153,11 +168,50 @@ const MyPetInfo = ({ route, navigation }) => {
       { cancelable: true }
     );
   };
-
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+    }
+  
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All, // เปลี่ยนเป็น All เพื่อรองรับทุกประเภท
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
+    }
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${pet.pet_pic}` }} style={styles.petImage} />
-
+      <TouchableOpacity onPress={isEditing ? pickImage : null}>
+          {selectedImage ? (
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={[styles.petImage, isEditing && styles.imageEditing]}
+            />
+          ) : (
+            pet.pet_pic ? (
+              <Image
+                source={{ uri: `http://192.168.3.82/dogcare/uploads/${pet.pet_pic}` }}
+                style={[styles.petImage, isEditing && styles.imageEditing]}
+              />
+            ) : (
+              <FontAwesome name="user" size={100} color="gray" />
+            )
+          )}
+          {isEditing && (
+            <View style={styles.iconOverlay}>
+              <FontAwesome name="pencil" size={30} color="#fff" />
+            </View>
+          )}
+        </TouchableOpacity>
       <View style={styles.infoContainer}>
         <Text style={styles.labelCentered}>ชื่อ:</Text>
         {isEditing ? (
@@ -437,6 +491,14 @@ const styles = StyleSheet.create({
   radioContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  iconOverlay: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 25,
+    padding: 5,
   },
 });
 
