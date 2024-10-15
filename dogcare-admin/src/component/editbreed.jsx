@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button } from '@mui/material';
+import { Modal, Box, TextField, Button, Typography } from '@mui/material';
 import axios from 'axios';
 
 function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
@@ -18,9 +18,10 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
     picture: ''
   });
 
+  const [selectedFile, setSelectedFile] = useState(null); // State for selected file
+
   useEffect(() => {
     if (breedData) {
-      // Pre-fill form with breed data when the modal opens
       setFormData({
         breed_id: breedData.breed_id,
         breed_name: breedData.breed_name,
@@ -38,7 +39,6 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
     }
   }, [breedData]);
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -47,14 +47,35 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
     });
   };
 
-  // Handle form submission
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(URL.createObjectURL(file)); // Preview the selected image
+      setFormData({
+        ...formData,
+        picture: file // Store the file for uploading
+      });
+    }
+  };
+
   const handleSubmit = () => {
-    console.log(formData);
-    axios.post('http://localhost/dogcare/admin/editbreed.php', formData)
+    const formDataToSend = new FormData();
+    for (const key in formData) {
+      formDataToSend.append(key, formData[key]);
+    }
+    if (formData.picture) {
+      formDataToSend.append('picture', formData.picture); // Append the picture file
+    }
+
+    axios.post('http://localhost/dogcare/admin/editbreed.php', formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
       .then((response) => {
         if (response.data.success) {
-          onBreedUpdated(); // Call the parent callback to update the UI
-          onClose(); // Close the modal after a successful update
+          onBreedUpdated();
+          onClose();
         } else {
           alert(response.data.message || 'Failed to update breed.');
         }
@@ -67,104 +88,151 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={{
-        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-        width: 500, bgcolor: 'background.paper', boxShadow: 24, p: 4
-      }}>
-        <h2>Edit Breed</h2>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 500,
+          maxHeight: '80vh',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: '10px',
+          overflowY: 'auto',
+        }}
+      >
+        {/* Title */}
+        <Typography variant="h6" textAlign="center" gutterBottom>
+          แก้ไขข้อมูลสายพันธุ์สุนัข
+        </Typography>
 
+        {/* Image Preview */}
+        <Box display="flex" justifyContent="center" mb={2}>
+          <label style={{ cursor: 'pointer' }}>
+            <img
+              src={selectedFile || `http://localhost/dogcare/uploads/${formData.picture}`}
+              alt={formData.breed_name}
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginBottom: '16px',
+                transition: 'filter 0.3s',
+                filter: 'brightness(1)',
+              }}
+              onMouseEnter={(e) => (e.target.style.filter = 'brightness(0.5)')} // Darken on hover
+              onMouseLeave={(e) => (e.target.style.filter = 'brightness(1)')} // Restore on leave
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: 'none' }} // Hide the file input
+            />
+          </label>
+        </Box>
+
+        {/* Form Fields */}
         <TextField
           fullWidth
-          label="Breed Name"
+          label="ชื่อสายพันธุ์"
           name="breed_name"
           value={formData.breed_name}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Region"
+          label="ต้นกำเนิด"
           name="region"
           value={formData.region}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Weight"
+          label="น้ำหนัก"
           name="weight"
           value={formData.weight}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Height"
+          label="ส่วนสูง"
           name="height"
           value={formData.height}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Lifespan"
+          label="อายุขัย"
           name="lifespan"
           value={formData.lifespan}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Nature"
+          label="ลักษณะสายพันธุ์"
           name="nature"
           value={formData.nature}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Character"
+          label="นิสัยส่วนตัว"
           name="charac"
           value={formData.charac}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Problem"
+          label="ปัญหาสุขภาพ"
           name="problem"
           value={formData.problem}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Nutrition"
+          label="โภชนาการ"
           name="Nutrition"
           value={formData.Nutrition}
           onChange={handleChange}
           margin="normal"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          label="Record"
+          label="ประวัติสายพันธุ์"
           name="record"
           value={formData.record}
           onChange={handleChange}
           margin="normal"
-        />
-        <TextField
-          fullWidth
-          label="Picture URL"
-          name="picture"
-          value={formData.picture}
-          onChange={handleChange}
-          margin="normal"
+          variant="outlined"
         />
 
-        <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-          Save
-        </Button>
+        {/* Submit Button */}
+        <Box display="flex" justifyContent="center" mt={3}>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            บันทึก
+          </Button>
+        </Box>
       </Box>
     </Modal>
   );

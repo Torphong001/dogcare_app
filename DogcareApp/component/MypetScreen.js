@@ -12,7 +12,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('http://10.10.50.141/dogcare/getpets.php', {
+        const response = await axios.get('http://192.168.3.82/dogcare/getpets.php', {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
@@ -60,7 +60,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
     try {
       // สร้าง array ของ promises สำหรับการอัปเดตแต่ละ notification
       const updatePromises = notifications.map(async (notification) => {
-        return await axios.post('http://10.10.50.141/dogcare/updatenoti.php', {
+        return await axios.post('http://192.168.3.82/dogcare/updatenoti.php', {
           noti_id: notification.noti_id, // ส่ง noti_id เพื่ออัปเดต
           noti_status: 'R', // อัปเดตสถานะเป็น 'R'
         });

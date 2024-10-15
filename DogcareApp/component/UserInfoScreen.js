@@ -19,7 +19,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         setToken(storedToken); // Set token state
 
         if (storedToken) {
-          const response = await axios.get('http://10.10.50.141/dogcare/userinfo.php', {
+          const response = await axios.get('http://192.168.3.82/dogcare/userinfo.php', {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -59,7 +59,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
     if (isEditing) {
       try {
         const response = await axios.post(
-          'http://10.10.50.141/dogcare/edituserinfo.php',
+          'http://192.168.3.82/dogcare/edituserinfo.php',
           {
             firstName: userInfo.firstName,
             lastName: userInfo.lastName,
@@ -103,7 +103,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           />
         </TouchableOpacity>
         {userInfo.picture ? (
-          <Image source={{ uri: userInfo.picture }} style={styles.image} />
+          <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${userInfo.picture}` }} style={styles.image} />
         ) : (
           <FontAwesome name="user" size={100} color="gray" />
         )}

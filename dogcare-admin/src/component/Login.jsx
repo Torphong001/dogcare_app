@@ -42,13 +42,13 @@ function Login() {
   return (
     <Container maxWidth="xs" sx={{ mt: 8 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Login
+        เข้าสู่ระบบ
       </Typography>
       <form onSubmit={handleLogin}>
         <TextField
           fullWidth
           margin="normal"
-          label="Username"
+          label="ชื่อผู้ใช้งาน"
           variant="outlined"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -57,7 +57,7 @@ function Login() {
         <TextField
           fullWidth
           margin="normal"
-          label="Password"
+          label="รหัสผ่าน"
           type="password"
           variant="outlined"
           value={password}

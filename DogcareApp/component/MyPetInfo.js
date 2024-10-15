@@ -57,7 +57,7 @@ const MyPetInfo = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://10.10.50.141/dogcare/getbreedinfo.php",
+        "http://192.168.3.82/dogcare/getbreedinfo.php",
         { breed_id: pet.breed_id }
       );
       setBreedInfo(response.data);
@@ -102,7 +102,7 @@ const MyPetInfo = ({ route, navigation }) => {
     console.log(updatedPet);
     try {
       const response = await axios.post(
-        "http://10.10.50.141/dogcare/editpetinfo.php",
+        "http://192.168.3.82/dogcare/editpetinfo.php",
         {
           pet_id: pet.pet_id,
           ...updatedPet,
@@ -112,7 +112,7 @@ const MyPetInfo = ({ route, navigation }) => {
       if (response.data.success) {
         Alert.alert("Success", "Pet information updated successfully!");
         setIsEditing(false);
-        const updatedPetResponse = await axios.get(`http://10.10.50.141/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
+        const updatedPetResponse = await axios.get(`http://192.168.3.82/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
         setUpdatedPet(updatedPetResponse.data);
       } else {
         Alert.alert("Error", "Failed to update pet information.");
@@ -134,7 +134,7 @@ const MyPetInfo = ({ route, navigation }) => {
           onPress: async () => {
             try {
               const response = await axios.post(
-                "http://10.10.50.141/dogcare/deletepet.php",
+                "http://192.168.3.82/dogcare/deletepet.php",
                 { pet_id: pet.pet_id }
               );
               if (response.data.success) {

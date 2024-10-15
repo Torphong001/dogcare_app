@@ -11,7 +11,7 @@ const BreedScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current; // Animation value for modal fade in/out
 
   useEffect(() => {
-    fetch('http://10.10.50.141/dogcare/breedinfo.php')
+    fetch('http://192.168.3.82/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         setBreeds(data);
@@ -57,7 +57,7 @@ const BreedScreen = () => {
   const renderBreed = ({ item }) => (
     <TouchableOpacity onPress={() => openModal(item)}>
       <View style={styles.card}>
-        <Image source={{ uri: item.picture }} style={styles.image} />
+        <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${item.picture}` }} style={styles.image} />
         <View style={styles.textContainer}>
           <Text style={styles.breedName}>{item.breed_name}</Text>
           <Text style={styles.breedRegion}>{item.region}</Text>
@@ -94,7 +94,7 @@ const BreedScreen = () => {
               </TouchableWithoutFeedback>
               <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.modalHeader}>
-                  <Image source={{ uri: selectedBreed.picture }} style={styles.modalImage} />
+                  <Image source={{ uri: `http://192.168.3.82/dogcare/uploads/${selectedBreed.picture}` }} style={styles.modalImage} />
                   <View style={styles.modalTextContainer}>
                     <Text style={styles.modalBreedName}>{selectedBreed.breed_name}</Text>
                     <Text style={styles.modalRegion}>{selectedBreed.region}</Text>

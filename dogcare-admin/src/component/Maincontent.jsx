@@ -8,7 +8,6 @@ function MainContent() {
   const [dogCount, setDogCount] = useState(0);
 
   useEffect(() => {
-    // Fetch user count
     axios.get('http://localhost/dogcare/admin/usercount.php')
       .then(response => {
         setUserCount(response.data.count);
@@ -17,7 +16,6 @@ function MainContent() {
         console.error('Error fetching user count:', error);
       });
 
-    // Fetch breed count
     axios.get('http://localhost/dogcare/admin/breedcount.php')
       .then(response => {
         setBreedCount(response.data.count);
@@ -26,7 +24,6 @@ function MainContent() {
         console.error('Error fetching breed count:', error);
       });
 
-    // Fetch dog count
     axios.get('http://localhost/dogcare/admin/petcount.php')
       .then(response => {
         setDogCount(response.data.count);
@@ -37,21 +34,25 @@ function MainContent() {
   }, []);
 
   return (
-    <div className="w-4/5 bg-gray-100 p-10 flex flex-wrap gap-6">
-      <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
-        <FaUser className="text-4xl mb-4 mx-auto" />
-        <p className="text-3xl font-bold">{userCount}</p>
-        <p>จำนวนผู้ใช้ทั้งหมด</p>
-      </div>
-      <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
-        <FaUsers className="text-4xl mb-4 mx-auto" />
-        <p className="text-3xl font-bold">{breedCount}</p>
-        <p>จำนวนสายพันธุ์ทั้งหมด</p>
-      </div>
-      <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
-        <FaDog className="text-4xl mb-4 mx-auto" />
-        <p className="text-3xl font-bold">{dogCount}</p>
-        <p>จำนวนสุนัขของผู้ใช้ทั้งหมด</p>
+    <div className="relative flex flex-col items-center justify-start w-full min-h-screen pt-16">
+      <h1 className="text-4xl font-bold pb-6">จำนวนข้อมูลของ Dogcare</h1>
+
+      <div className="flex flex-wrap justify-center gap-6 w-4/5">
+        <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
+          <FaUser className="text-4xl mb-4 mx-auto" />
+          <p className="text-3xl font-bold">{userCount}</p>
+          <p>จำนวนผู้ใช้ทั้งหมด</p>
+        </div>
+        <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
+          <FaUsers className="text-4xl mb-4 mx-auto" />
+          <p className="text-3xl font-bold">{breedCount}</p>
+          <p>จำนวนสายพันธุ์ทั้งหมด</p>
+        </div>
+        <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">
+          <FaDog className="text-4xl mb-4 mx-auto" />
+          <p className="text-3xl font-bold">{dogCount}</p>
+          <p>จำนวนสุนัขของผู้ใช้ทั้งหมด</p>
+        </div>
       </div>
     </div>
   );

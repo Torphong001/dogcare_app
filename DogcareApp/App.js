@@ -41,7 +41,7 @@ const App = () => {
   useEffect(() => {
     const fetchNotifications = async (token) => {
       try {
-          const response = await axios.get('http://10.10.50.141/dogcare/getnotiall.php', {
+          const response = await axios.get('http://192.168.3.82/dogcare/getnotiall.php', {
               headers: {
                   Authorization: `Bearer ${token}`,
               },
@@ -61,7 +61,7 @@ const App = () => {
                       await sendLineNotification(userToken,notification);
   
                       // อัปเดต noti_status เป็น F
-                      await axios.post('http://10.10.50.141/dogcare/updatenoti.php', {
+                      await axios.post('http://192.168.3.82/dogcare/updatenoti.php', {
                           noti_id: notification.noti_id,
                           noti_status: 'F',
                       });
@@ -87,7 +87,7 @@ const App = () => {
 const sendLineNotification = async (userToken, notification) => {
   try {
       // Fetch user_id_line from your API
-      const userInfoResponse = await axios.get("http://10.10.50.141/dogcare/getuser_lineid.php", {
+      const userInfoResponse = await axios.get("http://192.168.3.82/dogcare/getuser_lineid.php", {
           headers: {
               Authorization: `Bearer ${userToken}`
           }
@@ -101,7 +101,7 @@ const sendLineNotification = async (userToken, notification) => {
       }
       console.log(notification.noti_pet_id)
       // Fetch pet details using the notification's pet ID
-      const petResponse = await axios.get(`http://10.10.50.141/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
+      const petResponse = await axios.get(`http://192.168.3.82/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
       const pet = petResponse.data;
 
       console.log(pet)
@@ -153,7 +153,15 @@ const sendLineNotification = async (userToken, notification) => {
         <Stack.Screen name="Login">
           {(props) => <LoginScreen {...props} handleLogin={setUserToken} />}
         </Stack.Screen>
-        <Stack.Screen name="Notiuser" >
+        <Stack.Screen name="Notiuser" 
+          options={{
+            title: "แจ้งเตือนทั้งหมดของวันนี้",
+            headerTitleAlign: "center", // Center the title
+            headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+            headerTintColor: "#fff", //
+            headerTitleStyle: { fontWeight: "bold" },
+          }}
+        >
           {(props) => <Notiuser {...props} notifications={notifications}/>}
         </Stack.Screen>
         <Stack.Screen
@@ -252,7 +260,7 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
         component={BreedScreen}
         options={{
           tabBarLabel: "ข้อมูลสุนัข",
-          title: "ข้อมูลสุนัข",
+          title: "Dogcare",
           headerTitleAlign: "center", // Center the title
           headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
           headerTintColor: "#fff", //
@@ -261,7 +269,14 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
       />
       <Tab.Screen
         name="Search"
-        options={{ tabBarLabel: "ค้นหา" }} // Thai label for SearchScreen
+        options={{ 
+          tabBarLabel: "ค้นหา" ,
+          title: "ค้นหาสายพันธุ์สุนัข",
+          headerTitleAlign: "center", // Center the title
+          headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+          headerTintColor: "#fff", //
+          headerTitleStyle: { fontWeight: "bold" },
+        }} // Thai label for SearchScreen
       >
         {(props) => <SearchScreen {...props} userToken={userToken} />}
       </Tab.Screen>

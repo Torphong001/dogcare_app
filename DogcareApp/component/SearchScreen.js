@@ -75,7 +75,7 @@ const SearchScreen = () => {
   const handleBreedDetails = async (breedname) => {
     try {
       const response = await axios.post(
-        "http://10.10.50.141/dogcare/getbreedpredic.php",
+        "http://192.168.3.82/dogcare/getbreedpredic.php",
         { breed_name: breedname }
       );
       const breedData = response.data;

@@ -1,28 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, Snackbar, Alert, Typography, Box, CircularProgress, Avatar } from '@mui/material';
 import axios from 'axios';
-import EditUserModal from './edituser'; // Import the EditUserModal component
 
 function User() {
   const [users, setUsers] = useState([]); // Initialize users state
   const [error, setError] = useState(null); // Error state
-  const [selectedUser, setSelectedUser] = useState(null); // Selected user for editing
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal open state
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'A':
-        return 'แอดมิน'; // Admin
-      case 'F':
-        return 'ถูกระงับการใช้งาน'; // Suspended
-      case 'U':
-        return 'ผู้ใช้งานทั่วไป'; // Regular user
-      case null:
-        return 'ผู้ใช้งานทั่วไป'; // Regular user
-      default:
-        return 'Unknown'; // Fallback text
-    }
-  };
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
+  const [snackbarMessage, setSnackbarMessage] = useState(''); // Snackbar message
+  const [loading, setLoading] = useState(true); // Loading state
+
   // Fetch users on component mount
   useEffect(() => {
     axios.get('http://localhost/dogcare/admin/user.php')
@@ -32,105 +18,123 @@ function User() {
         } else {
           setError('Invalid data format from API');
         }
+        setLoading(false); // Stop loading once data is fetched
       })
       .catch((error) => {
         setError('Network error');
+        setLoading(false);
       });
   }, []);
 
-  // Handle edit button click - open modal
-  const handleEditClick = (user) => {
-    setSelectedUser(user); // Set selected user data for editing
-    setIsModalOpen(true);  // Open modal
-  };
-
-  // Handle modal close
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
-
-  // Handle user data update
-  const handleUserUpdated = () => {
-    // Refresh users data after update
-    axios.get('http://localhost/dogcare/admin/user.php')
+  // Handle status change
+  const handleStatusChange = (userId, newStatus) => {
+    axios.post('http://localhost/dogcare/admin/edituser.php', { user_id: userId, status: newStatus })
       .then((response) => {
-        if (Array.isArray(response.data)) {
-          setUsers(response.data); // Set users if response is an array
-        }
+        // Update local state with new status after successful API call
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.user_id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+        // Set success message and open Snackbar
+        setSnackbarMessage('เปลี่ยนสถานะสําเร็จ');
+        setSnackbarOpen(true);
       })
       .catch((error) => {
-        setError('Network error');
+        console.error('Error updating status:', error);
       });
-    setIsModalOpen(false); // Close modal after updating
+  };
+
+  // Handle Snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>Error: {error}</div>;
   }
 
   return (
-    <div>
-      <h1>ข้อมูลผู้ใช้</h1>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>User ID</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>First Name</TableCell>
-              <TableCell>Last Name</TableCell>
-              <TableCell>Telephone</TableCell>
-              <TableCell>Line ID</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Picture</TableCell>
-              <TableCell>Edit</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.length > 0 ? (
-              users.map((user) => (
-                <TableRow key={user.user_id}>
-                  <TableCell>{user.user_id}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.firstname}</TableCell>
-                  <TableCell>{user.lastname}</TableCell>
-                  <TableCell>{user.tel}</TableCell>
-                  <TableCell>{user.line_id}</TableCell>
-                  <TableCell>{getStatusText(user.status)}</TableCell>
-                  <TableCell>
-                    {user.picture ? (
-                      <img src={user.picture} alt={user.username} width="50" height="50" />
-                    ) : (
-                      'No Picture'
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEditClick(user)}>
-                      <EditIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={9}>No users found</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    <Box sx={{ padding: 4, backgroundColor: '#FFE1E1', minHeight: '100vh' }}>
+      <Typography variant="h4" sx={{ marginBottom: 4, fontWeight: 'bold', textAlign: 'center', color: '#000000' }}>
+        ข้อมูลผู้ใช้
+      </Typography>
 
-      {/* Edit User Modal */}
-      {selectedUser && (
-        <EditUserModal
-          open={isModalOpen}
-          onClose={handleModalClose}
-          userData={selectedUser}
-          onUserUpdated={handleUserUpdated}
-        />
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#FF8D8D' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>รหัสผู้ใช้งาน</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>ชื่อผู้ใช้งาน</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>ชื่อ</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>นามสกุล</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>เบอร์โทรศัพท์</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>ไอดีไลน์</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>สถานะ</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>รูปภาพ</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <TableRow key={user.user_id}>
+                    <TableCell>{user.user_id}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.firstname}</TableCell>
+                    <TableCell>{user.lastname}</TableCell>
+                    <TableCell>{user.tel}</TableCell>
+                    <TableCell>{user.line_id}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={user.status || 'U'}
+                        onChange={(e) => handleStatusChange(user.user_id, e.target.value)}
+                        sx={{ minWidth: 120 }}
+                      >
+                        <MenuItem value="A">แอดมิน</MenuItem>
+                        <MenuItem value="F">ระงับการใช้งาน</MenuItem>
+                        <MenuItem value="U">ผู้ใช้งานทั่วไป</MenuItem>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {user.picture ? (
+                        <Avatar src={`http://localhost/dogcare/uploads/${user.picture}`} alt={user.username} sx={{ width: 56, height: 56 }} />
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          ไม่มีรูปภาพ
+                        </Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} sx={{ textAlign: 'center', padding: '20px', color: '#999' }}>ไม่พบข้อมูลผู้ใช้งาน</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+
+      {/* Snackbar to show success message */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000} // Auto hide after 3 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Position Snackbar at the top center
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }
 
 export default User;
+

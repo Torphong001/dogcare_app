@@ -9,6 +9,7 @@ import Login from './component/Login';
 import AddBreed from './component/addbreed';
 import Diseases from './component/diseases';
 import AddDiseases from './component/adddiseases';
+import './App.css';
 
 // PrivateRoute component to handle protected routes
 const PrivateRoute = ({ element, ...rest }) => {
