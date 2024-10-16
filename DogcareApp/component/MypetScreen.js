@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity, SafeAreaView  } from 'react-native';
 import axios from 'axios';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
-import { WebView } from 'react-native-webview'; // ใช้ WebView จาก Expo
+import { WebView } from 'react-native-webview'; // Import WebView
+import TestWebView from './TestWebView'; // ปรับเส้นทางตามตำแหน่งไฟล์จริง
 
 const MypetScreen = ({ navigation, userToken, notifications }) => {
   const [userInfo, setUserInfo] = useState([]);
@@ -92,10 +93,11 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
         renderItem={({ item }) =>
           item.addNew ? (
             <TouchableOpacity
-              style={[styles.card, styles.addCard]}
+              style={[styles.card, styles.addCard,{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }]}
               onPress={() => navigation.navigate('AddPetScreen')}
             >
               <Ionicons name="add-circle-outline" size={50} color="#FF9090" />
+              <Text style={styles.addText}>เพิ่มสัตว์เลี้ยง</Text>
             </TouchableOpacity>
           ) : (
             renderItem({ item })
@@ -104,37 +106,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
         keyExtractor={(item, index) => index.toString()}
       />
 
-      {/* WebView สำหรับ Botnoi */}
-      <WebView
-        originWhitelist={['*']}
-        source={{
-          html: `
-            <div id="bn-root"></div>
-            <script>window.onload = function() { BN.init({ version: '1.0' }) }</script>
-            <script>
-                (function(d, s, id) {
-                    var js, bjs = d.getElementsByTagName(s)[0];
-                    if(d.getElementById(id)) return;
-                    js = d.createElement(s); js.id = id;
-                    js.src = 'https://console.botnoi.ai/customerchat/index.js';
-                    bjs.parentNode.insertBefore(js, bjs);
-                } (document, 'script', 'bn-jssdk'));
-            </script>
-            <div class="bn-customerchat"
-                bot_id="670bc643f015af67717b26e7"
-                bot_logo="https://bn-sme-production-ap-southeast-1.s3.amazonaws.com/670bc643f015af67717b26e7/ccb24bc8-ba21-4e9d-a377-d2b021e42204.jpg"
-                bot_name="OPTIONAL ATTRIBUTE, YOU CAN CHANGE YOUR CHATBOT DISPLAYNAME"
-                theme_color="#000000"
-                locale="th"
-                logged_in_greeting="สวัสดีค่ะ"
-                greeting_message="กรุณาพิมพ์ข้อความเพื่อติดต่อ"
-                default_open="true">
-            </div>
-          `,
-        }}
-        style={{ height: 400, marginVertical: 20 }} // ปรับขนาด WebView
-      />
-
+      
       {/* ไอคอนแจ้งเตือน */}
       <TouchableOpacity style={styles.notificationIcon} onPress={handlePress}>
         <View style={styles.iconContainer}>
@@ -196,6 +168,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9090', // สีพื้นหลังของไอคอน
     borderRadius: 30, // ทำให้ไอคอนกลม
     padding: 10, // เพิ่ม padding เพื่อให้มีระยะห่าง
+  },
+  addText: {
+    marginTop: -5,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
   },
   redDot: {
     position: 'absolute',

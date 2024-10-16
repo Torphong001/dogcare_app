@@ -140,12 +140,12 @@ const MyPetInfo = ({ route, navigation }) => {
 
   const handleDelete = async () => {
     Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this pet?",
+      "ยืนยันการลบข้อมูลสุนัข",
+      "แน่ใจแล้วใช่หรือไม่ที่จะลบข้อมูลสุนัข?",
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "ยกเลิก", style: "cancel" },
         {
-          text: "OK",
+          text: "ยืนยัน",
           onPress: async () => {
             try {
               const response = await axios.post(
@@ -187,6 +187,20 @@ const MyPetInfo = ({ route, navigation }) => {
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
     }
+  };
+  const formatTextWithNewLine = (text) => {
+    // ตรวจสอบว่า text เป็น undefined หรือไม่ ถ้าเป็น ให้ส่งกลับเป็น Text ว่าง
+    if (!text) {
+      return <Text></Text>;
+    }
+  
+    const lines = text.split("|");
+    return lines.map((line, index) => (
+      <Text key={index}>
+        {line}
+        {index < lines.length - 1 && <Text>{'\n'}</Text>}
+      </Text>
+    ));
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -376,22 +390,52 @@ const MyPetInfo = ({ route, navigation }) => {
             {loading ? (
               <ActivityIndicator size="large" color="#0000ff" />
             ) : breedInfo ? (
-              <ScrollView>
+              <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.modalHeader}>
                   <Image
-                    source={{ uri: breedInfo.picture }}
+                    source={{
+                      uri: `http://192.168.3.82/dogcare/uploads/${breedInfo.picture}`,
+                    }}
                     style={styles.modalImage}
                   />
                   <View style={styles.modalTextContainer}>
                     <Text style={styles.modalBreedName}>
                       {breedInfo.breed_name}
                     </Text>
-                    <Text style={styles.modalRegion}>{breedInfo.region}</Text>
+                    <Text style={styles.modalRegion}>
+                      {breedInfo.region}
+                    </Text>
                   </View>
                 </View>
-                <Text style={styles.modalDescription}>
-                  {breedInfo.description}
-                </Text>
+                <View style={styles.modalDetails}>
+                  <Text style={styles.modalText}>
+                    น้ำหนัก: {breedInfo.weight} กก. ส่วนสูง:{" "}
+                    {breedInfo.height} นิ้ว
+                  </Text>
+                  <Text style={styles.modalText}>
+                    อายุขัย: {breedInfo.lifespan} ปี
+                  </Text>
+                  <View style={styles.modalDetails}>
+                    <Text style={styles.modalBreedName}>
+                      ลักษณะของสุนัขพันธุ์:
+                    </Text>
+                    {formatTextWithNewLine(breedInfo.nature)}
+                  </View>
+                  <Text style={styles.modalBreedName}>
+                    ลักษณะนิสัยของสุนัขพันธุ์ {breedInfo.breed_name}
+                  </Text>
+                  <Text style={styles.modalText}>{breedInfo.charac}</Text>
+                  <Text style={styles.modalBreedName}>ข้อเสีย</Text>
+                  <Text style={styles.modalText}>{formatTextWithNewLine(breedInfo.problem)}</Text>
+                  <Text style={styles.modalBreedName}>โภชนาการ</Text>
+                  <Text style={styles.modalText}>
+                    {formatTextWithNewLine(breedInfo.Nutrition)}
+                  </Text>
+                  <Text style={styles.modalBreedName}>
+                    ประวัติความเป็นมาของสุนัขพันธุ์
+                  </Text>
+                  <Text style={styles.modalText}>{breedInfo.record}</Text>
+                </View>
               </ScrollView>
             ) : (
               <Text>ข้อมูลไม่พบ</Text>
@@ -459,12 +503,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   moreButton: {
-    backgroundColor: "#FF9090",
+    backgroundColor: "#EA7D70",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
     flex: 1,
     marginHorizontal: 5,
+    marginTop: 8,
   },
   cancelButton: {
     backgroundColor: "#ccc",
@@ -499,6 +544,78 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 25,
     padding: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  scrollContainer: {
+    paddingBottom: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "90%",
+    maxHeight: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  modalTextContainer: {
+    marginLeft: 15,
+    justifyContent: "center",
+  },
+  modalBreedName: {
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  modalRegion: {
+    fontSize: 18,
+    color: "gray",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  scrollContainer: {
+    paddingBottom: 20,
+  },
+  modalDetails: {
+    marginBottom: 20,
   },
 });
 

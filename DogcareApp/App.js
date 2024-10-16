@@ -15,8 +15,10 @@ import AddPetScreen from "./component/AddPetScreen";
 import MyPetInfo from "./component/MyPetInfo";
 import Notipet from "./component/Notipet";
 import Notiuser from "./component/Notiuser";
+import TestWebView from "./component/TestWebView";
 import axios from 'axios';
 import Toast from 'react-native-toast-message'; // นำเข้า Toast
+
 
 
 
@@ -107,7 +109,7 @@ const sendLineNotification = async (userToken, notification) => {
       console.log(pet)
 
       // Prepare the message
-      const messageText = `แจ้งเตือน\nชื่อแจ้งเตือน: ${notification.noti_name}\nชื่อสุนัข: ${pet.pet_name}`;
+      const messageText = `แจ้งเตือน\nชื่อแจ้งเตือน: ${notification.noti_name}\nชื่อสุนัข: ${pet.pet_name}\nชื่อสุนัข: ${notification.noti_detail}`;
 
       // Send the LINE notification
       const response = await axios.post(
@@ -248,6 +250,8 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
             iconName = "person";
           } else if (route.name === "Breed" || route.name === "Mypet") {
             iconName = "paw";
+          } else if (route.name === "TestWebView") {
+            iconName = "chatbubble";
           }
           return <Icon name={iconName} size={size} color={color} />;
         },
@@ -267,10 +271,11 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
           headerTitleStyle: { fontWeight: "bold" },
         }} // Thai label for BreedScreen
       />
+      
       <Tab.Screen
         name="Search"
         options={{ 
-          tabBarLabel: "ค้นหา" ,
+          tabBarLabel: "ค้นหาสายพันธุ์" ,
           title: "ค้นหาสายพันธุ์สุนัข",
           headerTitleAlign: "center", // Center the title
           headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
@@ -298,7 +303,18 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
           >
             {(props) => <MypetScreen {...props} userToken={userToken} notifications={notifications}/>}
           </Tab.Screen>
-
+          <Tab.Screen
+        name="TestWebView"
+        component={TestWebView}
+        options={{
+          tabBarLabel: "แชทกับบอท",
+          title: "แชทกับบอท",
+          headerTitleAlign: "center", // Center the title
+          headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+          headerTintColor: "#fff", //
+          headerTitleStyle: { fontWeight: "bold" },
+        }} // Thai label for BreedScreen
+      />
           <Tab.Screen
             name="UserInfo"
             options={{

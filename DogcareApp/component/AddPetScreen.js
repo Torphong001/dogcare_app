@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 const AddPetScreen = ({ route, navigation, userToken }) => {
   const [petName, setPetName] = useState('');
-  const [petPic, setPetPic] = useState(null); // เปลี่ยนเป็น null
+  const [petPic, setPetPic] = useState(null);
   const [breedId, setBreedId] = useState('');
   const [petWeight, setPetWeight] = useState('');
   const [petHeight, setPetHeight] = useState('');
@@ -15,7 +15,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
   const [petSex, setPetSex] = useState('M');
   const [breeds, setBreeds] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null); 
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     fetch('http://192.168.3.82/dogcare/breedinfo.php')
@@ -51,8 +51,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นทั้งหมด');
       return;
     }
-  
-    // Prepare FormData to send
+
     const formData = new FormData();
     formData.append('petName', petName);
     formData.append('breedId', breedId);
@@ -61,8 +60,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     formData.append('petBd', petBd.toISOString().split('T')[0]);
     formData.append('petSex', petSex);
     formData.append('userId', userToken);
-  
-    // Append petPic if an image has been selected
+
     if (selectedImage) {
       formData.append('picture', {
         uri: selectedImage.uri,
@@ -70,15 +68,15 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
         type: selectedImage.mimeType,
       });
     }
-  
+
     try {
       const response = await fetch('http://192.168.3.82/dogcare/addpet.php', {
         method: 'POST',
-        body: formData, // Send FormData directly
+        body: formData,
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok && result.success) {
         Alert.alert('สำเร็จ', 'สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
         navigation.navigate('Mypet');
@@ -90,7 +88,6 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดขณะเพิ่มสัตว์เลี้ยง');
     }
   };
-  
 
   const pickImage = async () => {
     if (Platform.OS !== 'web') {
@@ -110,20 +107,13 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
-      setPetPic(result.assets[0].uri); // Update petPic with the selected image URI
+      setPetPic(result.assets[0].uri);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>เพิ่มสัตว์เลี้ยง</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="ชื่อสัตว์เลี้ยง"
-        value={petName}
-        onChangeText={setPetName}
-      />
-      
       {/* Image Picker */}
       <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
         {selectedImage ? (
@@ -132,6 +122,14 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
           <Text style={styles.imagePlaceholder}>เลือกภาพสัตว์เลี้ยง</Text>
         )}
       </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="ชื่อสัตว์เลี้ยง"
+        value={petName}
+        onChangeText={setPetName}
+      />
+      
+      
 
       {/* Breed Selector */}
       <Picker
@@ -190,14 +188,14 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       <View style={styles.radioContainer}>
         <Text style={styles.label}>เพศสัตว์เลี้ยง:</Text>
         <TouchableOpacity style={styles.radioOption} onPress={() => setPetSex('M')}>
-          <Text style={[styles.radioText, petSex === 'M' && styles.radioSelected]}>M</Text>
+          <Text style={[styles.radioText, petSex === 'M' && styles.radioSelected]}>เพศผู้</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.radioOption} onPress={() => setPetSex('F')}>
-          <Text style={[styles.radioText, petSex === 'F' && styles.radioSelected]}>F</Text>
+          <Text style={[styles.radioText, petSex === 'F' && styles.radioSelected]}>เพศเมีย</Text>
         </TouchableOpacity>
       </View>
 
-      <Button title="เพิ่มสัตว์เลี้ยง" onPress={handleAddPet} />
+      <Button title="เพิ่มสัตว์เลี้ยง" onPress={handleAddPet} color="#FF9090" />
     </View>
   );
 };
@@ -207,32 +205,40 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#f9f9f9',
   },
   title: {
     fontSize: 24,
     marginBottom: 16,
     textAlign: 'center',
+    color: '#333',
   },
   input: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
+    borderRadius: 5,
   },
   imagePicker: {
     backgroundColor: '#f0f0f0',
-    height: 200,
+    height: 120,
+    width: 120,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
+    borderRadius: 100, // ทำให้ขอบเป็นวงกลม
+    overflow: 'hidden',
+    alignSelf: 'center',
   },
   image: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 100, // ทำให้รูปภาพเป็นวงกลม
   },
   imagePlaceholder: {
     color: 'gray',
@@ -243,22 +249,22 @@ const styles = StyleSheet.create({
   },
   unit: {
     position: 'absolute',
-    right: 10,
-    top: '35%',
-    transform: [{ translateY: -10 }],
-    fontSize: 16,
-    color: '#333',
+    right: 16,
+    top: 10,
+    color: '#888',
   },
   datePickerContainer: {
     marginBottom: 12,
   },
   dateButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   dateButtonText: {
-    fontSize: 16,
+    textAlign: 'center',
   },
   radioContainer: {
     flexDirection: 'row',
@@ -266,16 +272,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   radioOption: {
-    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: 10,
   },
   radioText: {
     fontSize: 16,
-    marginHorizontal: 5,
+    color: '#888',
   },
   radioSelected: {
+    color: '#FF9090',
     fontWeight: 'bold',
-    color: '#007BFF',
   },
 });
 
