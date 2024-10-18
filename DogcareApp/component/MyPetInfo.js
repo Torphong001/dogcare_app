@@ -19,6 +19,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { RadioButton } from 'react-native-paper'; // นำเข้า RadioButton
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import Dialog from 'react-native-dialog';
 
 const MyPetInfo = ({ route, navigation }) => {
   const { pet } = route.params;
@@ -38,7 +39,12 @@ const MyPetInfo = ({ route, navigation }) => {
     pet_bd: petinfo.pet_bd,
   });
   const [selectedImage, setSelectedImage] = useState(null); 
-
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const showDialog = (message) => {
+    setDialogMessage(message);
+    setDialogVisible(true);
+  };
   const calculateAge = (birthDate) => {
     const birthMoment = moment(birthDate, "YYYY-MM-DD");
     const currentMoment = moment();
@@ -124,12 +130,12 @@ const MyPetInfo = ({ route, navigation }) => {
       );
   
       if (response.data.success) {
-        Alert.alert("Success", "Pet information updated successfully!");
+        showDialog("แก้ไขข้อมูลสำเร็จ");
         setIsEditing(false);
         const updatedPetResponse = await axios.get(`http://192.168.3.82/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
         setPetinfo(updatedPetResponse.data);
       } else {
-        Alert.alert("Error", "Failed to update pet information.");
+        showDialog("แก้ไขข้อมูลผิดพลาด");
       }
     } catch (error) {
       console.error("Error updating pet info:", error);
@@ -254,56 +260,77 @@ const MyPetInfo = ({ route, navigation }) => {
         )}
 
         <View style={styles.inlineContainer}>
-        <View style={styles.inlineItem}>
-          <Text style={styles.label}>เพศ:</Text>
-          {isEditing ? (
-            <RadioButton.Group
-              onValueChange={(newValue) =>
-                setUpdatedPet({ ...updatedPet, pet_sex: newValue })
-              }
-              value={updatedPet.pet_sex}
-            >
-              <View style={styles.radioContainer}>
-                <RadioButton.Item label="ชาย" value="M" />
-                <RadioButton.Item label="หญิง" value="F" />
+         {/* เพศ */}
+      <View style={styles.inlineItem}>
+        <Text style={styles.label}>เพศ:</Text>
+        {isEditing ? (
+          <RadioButton.Group
+            onValueChange={(newValue) =>
+              setUpdatedPet({ ...updatedPet, pet_sex: newValue })
+            }
+            value={updatedPet.pet_sex}
+          >
+            <View style={styles.radioContainer}>
+              <View style={styles.radioItem}>
+                <RadioButton.Android
+                  value="M"
+                  status={updatedPet.pet_sex === 'M' ? 'checked' : 'unchecked'}
+                  color="#ff7f50"
+                  uncheckedColor="#ccc"
+                  style={styles.radioButton}
+                />
+                <Text style={styles.radioLabel}>ผู้</Text>
               </View>
-            </RadioButton.Group>
-          ) : (
-            <Text style={styles.value}>
-              {petinfo.pet_sex === "M" ? "ชาย" : petinfo.pet_sex === "F" ? "หญิง" : "ไม่ระบุ"}
-            </Text>
-          )}
-        </View>
-          <View style={styles.inlineItem}>
-            <Text style={styles.label}>อายุ:</Text>
-            {isEditing ? (
-              <>
-                <TouchableOpacity onPress={showDatePickerHandler}>
-                  <Text style={styles.value}>
-                    {updatedPet.pet_bd || "เลือกวันเกิด"}
-                  </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={new Date(updatedPet.pet_bd || Date.now())}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                  />
-                )}
-              </>
-            ) : (
-              <Text style={styles.value}>{calculateAge(petinfo.pet_bd)}</Text>
+              <View style={styles.radioItem}>
+                <RadioButton.Android
+                  value="F"
+                  status={updatedPet.pet_sex === 'F' ? 'checked' : 'unchecked'}
+                  color="#ff7f50"
+                  uncheckedColor="#ccc"
+                  style={styles.radioButton}
+                />
+                <Text style={styles.radioLabel}>เมีย</Text>
+              </View>
+            </View>
+          </RadioButton.Group>
+        ) : (
+          <Text style={styles.value}>
+            {petinfo.pet_sex === "M" ? "ผู้" : petinfo.pet_sex === "F" ? "เมีย" : "ไม่ระบุ"}
+          </Text>
+        )}
+      </View>
+
+      {/* อายุ */}
+      <View style={styles.inlineItem}>
+        <Text style={styles.label}>อายุ:</Text>
+        {isEditing ? (
+          <>
+            <TouchableOpacity onPress={showDatePickerHandler} style={styles.dateButton}>
+              <Text style={styles.dateText}>
+                {updatedPet.pet_bd || "เลือกวันเกิด"}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={new Date(updatedPet.pet_bd || Date.now())}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+              />
             )}
-          </View>
-        </View>
+          </>
+        ) : (
+          <Text style={styles.value}>{calculateAge(petinfo.pet_bd)}</Text>
+        )}
+      </View>
+    </View>
 
         <View style={styles.inlineContainer}>
           <View style={styles.inlineItem}>
             <Text style={styles.label}>น้ำหนัก:</Text>
             {isEditing ? (
               <TextInput
-                style={styles.input}
+                style={styles.input2}
                 value={updatedPet.pet_weight}
                 onChangeText={(text) =>
                   setUpdatedPet({ ...updatedPet, pet_weight: text })
@@ -318,7 +345,7 @@ const MyPetInfo = ({ route, navigation }) => {
             <Text style={styles.label}>ส่วนสูง:</Text>
             {isEditing ? (
               <TextInput
-                style={styles.input}
+                style={styles.input2}
                 value={updatedPet.pet_height}
                 onChangeText={(text) =>
                   setUpdatedPet({ ...updatedPet, pet_height: text })
@@ -362,7 +389,7 @@ const MyPetInfo = ({ route, navigation }) => {
         </View>
 
         <TouchableOpacity style={styles.moreButton} onPress={fetchBreedInfo}>
-          <Text style={styles.moreButtonText}>ดูเพิ่มเติม</Text>
+          <Text style={styles.moreButtonText}>ดูข้อมูลสายพันธุ์เพิ่มเติม</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.moreButton}
@@ -443,6 +470,12 @@ const MyPetInfo = ({ route, navigation }) => {
           </View>
         </View>
       </Modal>
+      <Dialog.Container visible={dialogVisible}>
+        <Dialog.Description>
+          {dialogMessage}
+        </Dialog.Description>
+        <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
+      </Dialog.Container>
     </ScrollView>
   );
 };
@@ -494,6 +527,17 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     padding: 10,
     marginBottom: 10,
+    width: "100%",
+    borderRadius: 5,
+    backgroundColor: "white",
+  },
+  input2: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 10,
+    marginLeft: 10,
+    width: "90%",
     borderRadius: 5,
     backgroundColor: "white",
   },
@@ -616,6 +660,26 @@ const styles = StyleSheet.create({
   },
   modalDetails: {
     marginBottom: 20,
+  },
+  radioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  radioLabel: {
+    fontSize: 16, // ปรับขนาดตัวหนังสือให้เล็กลง
+    color: '#333',
+    marginLeft: 5, // ลดช่องว่างระหว่างปุ่มกับข้อความ
+  },
+  dateButton: {
+    backgroundColor: '#FF8D8D',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  dateText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

@@ -33,7 +33,7 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
         Alert.alert(' ', 'สมัครสมาชิกสําเร็จ');
         navigation.navigate('Login');
       } else {
-        Alert.alert('Error', result.message || 'Registration failed');
+        Alert.alert(' ', 'สมัครสมาชิกไม่สําเร็จ');
       }
     } catch (error) {
       console.error('Registration error:', error);

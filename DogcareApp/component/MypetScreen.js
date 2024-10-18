@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity, SafeAreaView
 import axios from 'axios';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
-import { WebView } from 'react-native-webview'; // Import WebView
-import TestWebView from './TestWebView'; // ปรับเส้นทางตามตำแหน่งไฟล์จริง
 
 const MypetScreen = ({ navigation, userToken, notifications }) => {
   const [userInfo, setUserInfo] = useState([]);

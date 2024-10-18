@@ -15,19 +15,25 @@ const LoginScreen = ({ navigation, handleLogin }) => {
         },
         body: JSON.stringify({ username, password }),
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const result = await response.json();
-
+  
       if (result.success) {
-        await AsyncStorage.setItem('userToken', result.token);
-        handleLogin(result.token); // Call handleLogin to update userToken
-        Alert.alert(' ','เข้าสู่ระบบสําเร็จ');
-        console.log('Token:', result.token);
-        navigation.navigate('Breed');
+        if (result.status === 'F') {
+          Alert.alert(' ', 'ไอดีนี้โดนระงับการใช้งาน');
+          setUsername(''); // รีเซ็ตค่า username
+          setPassword(''); // รีเซ็ตค่า password
+        } else {
+          await AsyncStorage.setItem('userToken', result.token);
+          handleLogin(result.token); // Call handleLogin to update userToken
+          Alert.alert(' ','เข้าสู่ระบบสําเร็จ');
+          console.log('Token:', result.token);
+          navigation.navigate('Breed');
+        }
       } else {
         Alert.alert(' ', result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       }
@@ -36,6 +42,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
       Alert.alert('Error', `เกิดข้อมูลพลาดจากฐานข้อมูล`);
     }
   };
+  
 
   return (
     <View style={styles.container}>

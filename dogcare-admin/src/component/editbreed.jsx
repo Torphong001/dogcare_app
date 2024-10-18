@@ -189,6 +189,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           onChange={handleChange}
           margin="normal"
           variant="outlined"
+          multiline
+          rows={4} // กำหนดให้สูง 3 บรรทัด
         />
         <TextField
           fullWidth
@@ -198,6 +200,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           onChange={handleChange}
           margin="normal"
           variant="outlined"
+          multiline
+          rows={4} // กำหนดให้สูง 3 บรรทัด
         />
         <TextField
           fullWidth
@@ -207,6 +211,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           onChange={handleChange}
           margin="normal"
           variant="outlined"
+          multiline
+          rows={4} // กำหนดให้สูง 3 บรรทัด
         />
         <TextField
           fullWidth
@@ -216,6 +222,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           onChange={handleChange}
           margin="normal"
           variant="outlined"
+          multiline
+          rows={4} // กำหนดให้สูง 3 บรรทัด
         />
         <TextField
           fullWidth
@@ -225,6 +233,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           onChange={handleChange}
           margin="normal"
           variant="outlined"
+          multiline
+          rows={4} // กำหนดให้สูง 3 บรรทัด
         />
 
         {/* Submit Button */}

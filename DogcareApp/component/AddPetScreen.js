@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import Dialog from 'react-native-dialog';
 
 const AddPetScreen = ({ route, navigation, userToken }) => {
   const [petName, setPetName] = useState('');
@@ -16,6 +17,8 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
   const [breeds, setBreeds] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   useEffect(() => {
     fetch('http://192.168.3.82/dogcare/breedinfo.php')
@@ -45,10 +48,13 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       setPetSex('M');
     }, [])
   );
-
+  const showDialog = (message) => {
+    setDialogMessage(message);
+    setDialogVisible(true);
+  };
   const handleAddPet = async () => {
     if (!petName || !breedId || !petWeight || !petHeight) {
-      Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นทั้งหมด');
+      showDialog('กรุณากรอกข้อมูลที่จำเป็นทั้งหมด');
       return;
     }
 
@@ -78,8 +84,10 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        Alert.alert('สำเร็จ', 'สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
-        navigation.navigate('Mypet');
+        showDialog('สัตว์เลี้ยงของคุณได้ถูกเพิ่มเรียบร้อยแล้ว');
+        setTimeout(() => {
+          navigation.navigate('Mypet');
+        }, 3000);
       } else {
         Alert.alert('ข้อผิดพลาด', result.message || 'ไม่สามารถเพิ่มสัตว์เลี้ยงได้');
       }
@@ -196,6 +204,13 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       </View>
 
       <Button title="เพิ่มสัตว์เลี้ยง" onPress={handleAddPet} color="#FF9090" />
+      <Dialog.Container visible={dialogVisible}>
+        <Dialog.Title></Dialog.Title>
+        <Dialog.Description>
+          {dialogMessage}
+        </Dialog.Description>
+        <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
+      </Dialog.Container>
     </View>
   );
 };

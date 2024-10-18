@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Dialog from 'react-native-dialog';
 
 const NotiPet = ({ route }) => {
   const { pet_id } = route.params;
@@ -27,6 +28,12 @@ const NotiPet = ({ route }) => {
   const [notiSpecificDays, setNotiSpecificDays] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false); // เพิ่ม showDatePicker
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const showDialog = (message) => {
+    setDialogMessage(message);
+    setDialogVisible(true);
+  };
 
   const dayOptions = [
     { label: "Sunday", value: "Su" },
@@ -115,11 +122,10 @@ const NotiPet = ({ route }) => {
             noti_day: formattedDay,
           },
         ]);
-        Alert.alert("Notification added successfully!");
+        showDialog("เพิ่มการแจ้งเตือนสําเร็จ");
       } else {
-        Alert.alert(
-          "Error adding notification",
-          response.data.message || "Unknown error occurred"
+        showDialog(
+          "เพิ่มการแจ้งเตือนไม่สําเร็จ: "
         );
       }
     } catch (error) {
@@ -138,15 +144,15 @@ const NotiPet = ({ route }) => {
 
   const handleDeleteNotification = (noti_id) => {
     Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this notification?",
+      "ยืนยันการลบแจ้งเตือน",
+      "คุณต้องการลบแจ้งเตือนนี้?",
       [
         {
-          text: "Cancel",
+          text: "ยกเลิก",
           style: "cancel",
         },
         {
-          text: "Delete",
+          text: "ยืนยัน",
           onPress: async () => {
             try {
               const response = await axios.post(
@@ -160,7 +166,7 @@ const NotiPet = ({ route }) => {
                 setNotifications(
                   notifications.filter((noti) => noti.noti_id !== noti_id)
                 );
-                Alert.alert("Notification deleted successfully!");
+                showDialog("ลบแจ้งเตือนสําเร็จ");
               } else {
                 Alert.alert(
                   "Error deleting notification",
@@ -420,6 +426,12 @@ const NotiPet = ({ route }) => {
           </View>
         </View>
       </Modal>
+      <Dialog.Container visible={dialogVisible}>
+        <Dialog.Description>
+          {dialogMessage}
+        </Dialog.Description>
+        <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
+      </Dialog.Container>
     </View>
   );
 };

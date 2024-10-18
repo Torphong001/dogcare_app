@@ -4,6 +4,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import Dialog from 'react-native-dialog';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,6 +15,12 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
   const [token, setToken] = useState(null); 
   const [isEditing, setIsEditing] = useState(false); 
   const [selectedImage, setSelectedImage] = useState(null); 
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const showDialog = (message) => {
+    setDialogMessage(message);
+    setDialogVisible(true);
+  };
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -93,9 +100,11 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
   
         console.log(response.data);
         if (response.data.success) {
+          showDialog('แก้ไขข้อมูลสําเร็จ');
           setIsEditing(false);
         } else {
           console.error('Error from API:', response.data.error);
+          showDialog('แก้ไขข้อมูลไม่สําเร็จ');
         }
       } catch (error) {
         console.error('Failed to update user info:', error.response ? error.response.data : error.message);
@@ -219,6 +228,12 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           <Text style={styles.logoutButtonText}>ออกจากระบบ</Text>
         </TouchableOpacity>
       </View>
+      <Dialog.Container visible={dialogVisible}>
+        <Dialog.Description>
+          {dialogMessage}
+        </Dialog.Description>
+        <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
+      </Dialog.Container>
     </View>
   );
 };

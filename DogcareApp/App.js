@@ -171,7 +171,7 @@ const sendLineNotification = async (userToken, notification) => {
           component={StepRegisterScreen1}
           options={{
             tabBarLabel: "สมัครสมาชิก",
-            title: "สมัครสมาชิก",
+            title: "สมัครสมาชิกขั้นตอนที่1",
             headerTitleAlign: "center", // Center the title
             headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
             headerTintColor: "#fff", //
@@ -183,7 +183,7 @@ const sendLineNotification = async (userToken, notification) => {
           component={StepRegisterScreen2}
           options={{
             tabBarLabel: "สมัครสมาชิก",
-            title: "สมัครสมาชิก",
+            title: "สมัครสมาชิกขั้นตอนที่2",
             headerTitleAlign: "center", // Center the title
             headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
             headerTintColor: "#fff", //

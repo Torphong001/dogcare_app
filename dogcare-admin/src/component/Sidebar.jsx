@@ -33,7 +33,6 @@ function Sidebar() {
           <Link to="/Admin" className="hover:underline">ข้อมูล admin</Link>
           <Link to="/User" className="hover:underline">จัดการข้อมูลผู้ใช้</Link>
           <Link to="/Breed" className="hover:underline">จัดการข้อมูลสายพันธุ์</Link>
-          <Link to="/Diseases" className="hover:underline">จัดการข้อมูลโรคของสุนัข</Link>
         </div>
       )}
     </div>
