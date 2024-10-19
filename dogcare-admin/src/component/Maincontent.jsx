@@ -35,7 +35,7 @@ function MainContent() {
 
   return (
     <div className="relative flex flex-col items-center justify-start w-full min-h-screen pt-16">
-      <h1 className="text-4xl font-bold pb-6">จำนวนข้อมูลของ Dogcare</h1>
+      <h1 className="text-4xl font-bold pb-6">สถิติข้อมูลของ Dogcare</h1>
 
       <div className="flex flex-wrap justify-center gap-6 w-4/5">
         <div className="bg-white border-2 border-red-400 rounded-lg shadow-lg p-6 text-center w-1/4">

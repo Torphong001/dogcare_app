@@ -21,7 +21,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
   const [dialogMessage, setDialogMessage] = useState('');
 
   useEffect(() => {
-    fetch('http://192.168.3.82/dogcare/breedinfo.php')
+    fetch('http://192.168.50.72/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -76,7 +76,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.3.82/dogcare/addpet.php', {
+      const response = await fetch('http://192.168.50.72/dogcare/addpet.php', {
         method: 'POST',
         body: formData,
       });
@@ -121,25 +121,23 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>เพิ่มสัตว์เลี้ยง</Text>
       {/* Image Picker */}
       <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
         {selectedImage ? (
           <Image source={{ uri: selectedImage.uri }} style={styles.image} />
         ) : (
-          <Text style={styles.imagePlaceholder}>เลือกภาพสัตว์เลี้ยง</Text>
+          <Text style={styles.imagePlaceholder}>เลือกภาพ</Text>
         )}
       </TouchableOpacity>
+      <Text style={styles.titlebox}>ชื่อสุนัข :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ชื่อสัตว์เลี้ยง"
+        placeholder=""
         value={petName}
         onChangeText={setPetName}
       />
-      
-      
-
       {/* Breed Selector */}
+      <Text style={styles.titlebox}>ชื่อสายพันธุ์ :</Text>
       <Picker
         selectedValue={breedId}
         style={styles.input}
@@ -150,17 +148,18 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
           <Picker.Item key={breed.breed_id} label={breed.breed_name} value={breed.breed_id} />
         ))}
       </Picker>
-
+      <Text style={styles.titlebox}>น้ำหนัก :</Text>
       <View style={styles.inputContainer}>
         <TextInput
           style={[styles.input, { paddingRight: 60 }]}
-          placeholder="น้ำหนักสัตว์เลี้ยง"
+          placeholder=""
           value={petWeight}
           onChangeText={setPetWeight}
           keyboardType="numeric"
         />
         <Text style={styles.unit}>กก.</Text>
       </View>
+      <Text style={styles.titlebox}>ส่วนสูง :</Text>
       <View style={styles.inputContainer}>
         <TextInput
           style={[styles.input, { paddingRight: 60 }]}
@@ -174,7 +173,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
       {/* Date Picker */}
       <View style={styles.datePickerContainer}>
-        <Text style={styles.label}>วันเกิดของสัตว์เลี้ยง:</Text>
+        <Text style={styles.titlebox}>วันเกิด:</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
           <Text style={styles.dateButtonText}>{petBd.toLocaleDateString()}</Text>
         </TouchableOpacity>
@@ -194,7 +193,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
       {/* Pet Sex Radio Buttons */}
       <View style={styles.radioContainer}>
-        <Text style={styles.label}>เพศสัตว์เลี้ยง:</Text>
+        <Text style={styles.titlebox}>เพศ:</Text>
         <TouchableOpacity style={styles.radioOption} onPress={() => setPetSex('M')}>
           <Text style={[styles.radioText, petSex === 'M' && styles.radioSelected]}>เพศผู้</Text>
         </TouchableOpacity>
@@ -260,7 +259,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: 5,
   },
   unit: {
     position: 'absolute',
@@ -299,6 +298,11 @@ const styles = StyleSheet.create({
   radioSelected: {
     color: '#FF9090',
     fontWeight: 'bold',
+  },
+  titlebox: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
 

@@ -10,26 +10,24 @@ import {
   Paper, 
   Typography, 
   Button, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle, 
-  DialogContentText, 
   TablePagination, 
   Snackbar, 
   Alert,
-  Box 
+  TextField,
+  Box,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from 'react-router-dom';
 import EditBreedModal from './editbreed';
 
 function Breed() {
   const [breeds, setBreeds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [breedToDelete, setBreedToDelete] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -74,38 +72,35 @@ function Breed() {
     navigate('/addbreed');
   };
 
-  const handleDeleteClick = (breed) => {
-    setBreedToDelete(breed);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    axios.delete('http://localhost/dogcare/admin/deletebreed.php', {
-      data: { breed_id: breedToDelete.breed_id }
+  const handleStatusToggle = (breed) => {
+    const newStatus = breed.status === 'F' ? null : 'F';  // เปลี่ยนสถานะ
+  
+    axios.post('http://localhost/dogcare/admin/deletebreed.php', {
+      breed_id: breed.breed_id,
+      status: newStatus  // ส่งสถานะใหม่ไปที่ backend
     })
     .then((response) => {
-      if (response.data.status === 'success') {
-        fetchBreeds();
-        setSnackbarMessage('ลบสายพันธุ์สำเร็จ!');
-        setSnackbarOpen(true);
+      if (response.data.success) {  // ตรวจสอบความสำเร็จจาก backend
+        fetchBreeds();  // เรียกข้อมูลใหม่ โดยไม่ต้องเปลี่ยนหน้า
+        setSnackbarMessage(newStatus === null ? 'แสดงข้อมูลสำเร็จ!' : 'ระงับการแสดงสำเร็จ!');
+        setSnackbarOpen(true);  // เปิด Snackbar เพื่อแสดงผลการทำงาน
       } else {
-        setError(response.data.message);
+        setError(response.data.message);  // แสดงข้อผิดพลาดจาก backend
       }
     })
     .catch((error) => {
-      setError('Error deleting the breed');
-    })
-    .finally(() => {
-      setDeleteDialogOpen(false);
-      setBreedToDelete(null);
+      setError('เกิดข้อผิดพลาดขณะอัปเดตสถานะพันธุ์สุนัข');  // ข้อความแสดงเมื่อเกิดข้อผิดพลาดในการเชื่อมต่อ
     });
   };
 
-  const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setBreedToDelete(null);
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
   };
 
+  const filteredBreeds = breeds.filter((breed) =>
+    breed.breed_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -124,33 +119,49 @@ function Breed() {
       <Typography variant="h4" sx={{ marginBottom: 4, fontWeight: 'bold', textAlign: 'center', color: '#000000' }}>
         ข้อมูลสายพันธุ์
       </Typography>
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={handleAddBreedClick}
-        sx={{ mb: 2, backgroundColor: '#4caf50' }}
-      >
-        เพิ่มสายพันธุ์
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <TextField
+          label="ค้นหาสายพันธุ์"
+          variant="outlined"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          sx={{ width: 710, borderRadius: 1 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton>
+                  <SearchIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleAddBreedClick}
+          sx={{ backgroundColor: '#4caf50' }}
+        >
+          เพิ่มสายพันธุ์
+        </Button>
+      </Box>
       <TableContainer component={Paper} sx={{ mt: 2, backgroundColor: '#f9f9f9' }}>
         <Table>
           <TableHead sx={{ backgroundColor: '#FF8D8D' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>รหัสสายพันธุ์</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>ชื่อสายพันธุ์</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>รูปภาพ</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>ต้นกำเนิด</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>น้ำหนัก</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>ส่วนสูง</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>อายุขัย</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>จัดการ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>สถานะ</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {breeds.length > 0 ? (
-              breeds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((breed) => (
+            {filteredBreeds.length > 0 ? (
+              filteredBreeds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((breed) => (
                 <TableRow key={breed.breed_id}>
-                  <TableCell>{breed.breed_id}</TableCell>
                   <TableCell>{breed.breed_name}</TableCell>
                   <TableCell>
                     {breed.picture ? (
@@ -183,17 +194,20 @@ function Breed() {
                     </Button>
                     <Button 
                       variant="outlined" 
-                      color="error" 
-                      onClick={() => handleDeleteClick(breed)}
+                      color={breed.status === 'F' ? 'success' : 'error'} 
+                      onClick={() => handleStatusToggle(breed)}
+                      sx={{ mr: 1 }}
                     >
-                      ลบ
+                      {breed.status === 'F' ? 'แสดงข้อมูล' : 'ระงับการแสดง'}
                     </Button>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center">No breeds found</TableCell>
+                <TableCell colSpan={8} align="center" sx={{ color: 'red', fontStyle: 'italic' }}>
+                  ไม่พบข้อมูลที่ค้นหา
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -201,7 +215,7 @@ function Breed() {
         <TablePagination
           rowsPerPageOptions={[8]}
           component="div"
-          count={breeds.length}
+          count={filteredBreeds.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -218,27 +232,6 @@ function Breed() {
           onBreedUpdated={handleBreedUpdated}
         />
       )}
-
-      {/* Dialog สำหรับการลบ */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-      >
-        <DialogTitle>ยืนยันการลบข้อมูล</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            คุณต้องการลบสายพันธุ์ {breedToDelete?.breed_name} หรือไม่?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            ยกเลิก
-          </Button>
-          <Button onClick={confirmDelete} color="secondary">
-            ลบ
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Snackbar สำหรับการแจ้งเตือน */}
       <Snackbar

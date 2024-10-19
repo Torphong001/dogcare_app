@@ -23,24 +23,27 @@ const StepRegisterScreen1 = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>กรอกชื่อผู้ใช้และรหัสผ่าน</Text>
+      <Text style={styles.titlebox}>ชื่อผู้ใช้งาน :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ชื่อผู้ใช้งาน"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={username}
         onChangeText={setUsername}
       />
+      <Text style={styles.titlebox}>รหัสผ่าน :</Text>
       <TextInput
         style={styles.input}
-        placeholder="รหัสผ่าน"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
+      <Text style={styles.titlebox}>ยืนยันรหัสผ่าน :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ยืนยันรหัสผ่าน"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
@@ -88,6 +91,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  titlebox: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
 

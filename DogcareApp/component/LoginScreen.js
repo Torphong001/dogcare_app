@@ -8,7 +8,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
 
   const handleLoginPress = async () => {
     try {
-      const response = await fetch('http://192.168.3.82/dogcare/login.php', {
+      const response = await fetch('http://192.168.50.72/dogcare/login.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,16 +47,18 @@ const LoginScreen = ({ navigation, handleLogin }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>เข้าสู่ระบบ</Text>
+      <Text style={styles.titlebox}>ชื่อผู้ใช้ :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ชื่อผู้ใช้"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={username}
         onChangeText={setUsername}
       />
+      <Text style={styles.titlebox}>รหัสผ่าน :</Text>
       <TextInput
         style={styles.input}
-        placeholder="รหัสผ่าน"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={password}
         onChangeText={setPassword}
@@ -119,6 +121,11 @@ const styles = StyleSheet.create({
     color: '#FF9090', // Theme color
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  titlebox: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
 

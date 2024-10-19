@@ -49,7 +49,7 @@ const NotiPet = ({ route }) => {
     const fetchPetNotification = async () => {
       try {
         const response = await axios.post(
-          "http://192.168.3.82/dogcare/notipet.php",
+          "http://192.168.50.72/dogcare/notipet.php",
           { pet_id }
         );
         if (response.data.success) {
@@ -102,7 +102,7 @@ const NotiPet = ({ route }) => {
     console.log(formattedTime, formattedDay, formattedDate);
     try {
       const response = await axios.post(
-        "http://192.168.3.82/dogcare/addnoti.php",
+        "http://192.168.50.72/dogcare/addnoti.php",
         {
           noti_name: notiName,
           noti_detail: notiDetail,
@@ -156,7 +156,7 @@ const NotiPet = ({ route }) => {
           onPress: async () => {
             try {
               const response = await axios.post(
-                "http://192.168.3.82/dogcare/deletenoti.php",
+                "http://192.168.50.72/dogcare/deletenoti.php",
                 {
                   noti_id,
                 }

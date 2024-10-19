@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Modal, Pressable } from 'react-native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 
 const Notiuser = ({ notifications }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
   const formatTextWithNewLine = (text) => {
     // ตรวจสอบว่า text เป็น undefined หรือไม่ ถ้าเป็น ให้ส่งกลับเป็น Text ว่าง
     if (!text) {
@@ -14,6 +17,7 @@ const Notiuser = ({ notifications }) => {
         {line.trim()} {/* ตัดช่องว่างซ้ายและขวา */}
         {index < lines.length - 1 && <Text>{' '}</Text>} {/* เพิ่มช่องว่าง */}
       </Text>
+      
     ));
   };
 
@@ -72,6 +76,36 @@ const Notiuser = ({ notifications }) => {
       ) : (
         <Text style={styles.noDataText}>ไม่มีการแจ้งเตือน</Text>
       )}
+      <TouchableOpacity style={styles.floatingButton} onPress={() => setModalVisible(true)}>
+        <Image
+          source={require('../assets/line.png')} // รูป Line จากโฟลเดอร์ assets
+          style={styles.imageStyle}
+        />
+      </TouchableOpacity>
+
+      {/* Modal สำหรับแสดงรูป "วิธีรับการแจ้งเตือนผ่านไลน์.jpg" */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Image
+              source={require('../assets/วิธีรับการแจ้งเตือนผ่านไลน์.jpg')} // รูปที่ต้องการแสดง
+              style={styles.modalImage}
+              resizeMode="cover" // ตัดส่วนที่เกินออก
+            />
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.textStyle}>ปิด</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -110,6 +144,67 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#999',
     marginTop: 20,
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 20, // ระยะจากขอบล่างจอ
+    right: 20,  // ระยะจากขอบขวาจอ
+    width: 60,
+    height: 60,
+    borderRadius: 30, // ทำให้เป็นวงกลม
+    backgroundColor: '#25D366', // สีพื้นหลัง (สีเขียว Line)
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // เงาของปุ่ม
+  },
+  imageStyle: {
+    width: 60, // ปรับขนาดรูปให้ใหญ่ขึ้น
+    height: 60,
+    borderRadius: 30, // ทำให้เป็นวงกลม
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', // พื้นหลังใสเมื่อ Modal เปิด
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  modalImage: {
+    width: 350,
+    height: 400,
+    marginBottom: 20,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonClose: {
+    backgroundColor: 'red',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

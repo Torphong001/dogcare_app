@@ -29,7 +29,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         setToken(storedToken);
 
         if (storedToken) {
-          const response = await axios.get('http://192.168.3.82/dogcare/userinfo.php', {
+          const response = await axios.get('http://192.168.50.72/dogcare/userinfo.php', {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -88,7 +88,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         });
         console.log(selectedImage);
         const response = await axios.post(
-          'http://192.168.3.82/dogcare/edituserinfo.php',
+          'http://192.168.50.72/dogcare/edituserinfo.php',
           formData,
           {
             headers: {
@@ -175,7 +175,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           ) : (
             userInfo.picture ? (
               <Image
-                source={{ uri: `http://192.168.3.82/dogcare/uploads/${userInfo.picture}` }}
+                source={{ uri: `http://192.168.50.72/dogcare/uploads/${userInfo.picture}` }}
                 style={[styles.image, isEditing && styles.imageEditing]}
               />
             ) : (

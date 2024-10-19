@@ -15,7 +15,7 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.3.82/dogcare/register.php', {
+      const response = await fetch('http://192.168.50.72/dogcare/register.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,30 +44,34 @@ const StepRegisterScreen2 = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>กรอกข้อมูลส่วนตัว</Text>
+      <Text style={styles.titlebox}>ชื่อ :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ชื่อ"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={firstName}
         onChangeText={setFirstName}
       />
+      <Text style={styles.titlebox}>นามสกุุล :</Text>
       <TextInput
         style={styles.input}
-        placeholder="นามสกุุล"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={lastName}
         onChangeText={setLastName}
       />
+      <Text style={styles.titlebox}>เบอร์โทรศัพท์ :</Text>
       <TextInput
         style={styles.input}
-        placeholder="เบอร์โทรศัพท์"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
       />
+      <Text style={styles.titlebox}>ไอดีไลน์ :</Text>
       <TextInput
         style={styles.input}
-        placeholder="ไอดีไลน์"
+        placeholder=""
         placeholderTextColor="#aaa"
         value={lineId}
         onChangeText={setLineId}
@@ -114,6 +118,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  titlebox: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
 

@@ -58,7 +58,7 @@ const MyPetInfo = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://192.168.3.82/dogcare/getbreedinfo.php",
+        "http://192.168.50.72/dogcare/getbreedinfo.php",
         { breed_id: pet.breed_id }
       );
       setBreedInfo(response.data);
@@ -120,7 +120,7 @@ const MyPetInfo = ({ route, navigation }) => {
     }
     console.log(formData);
       const response = await axios.post(
-        "http://192.168.3.82/dogcare/editpetinfo.php",
+        "http://192.168.50.72/dogcare/editpetinfo.php",
         formData,
         {
           headers: {
@@ -132,7 +132,7 @@ const MyPetInfo = ({ route, navigation }) => {
       if (response.data.success) {
         showDialog("แก้ไขข้อมูลสำเร็จ");
         setIsEditing(false);
-        const updatedPetResponse = await axios.get(`http://192.168.3.82/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
+        const updatedPetResponse = await axios.get(`http://192.168.50.72/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
         setPetinfo(updatedPetResponse.data);
       } else {
         showDialog("แก้ไขข้อมูลผิดพลาด");
@@ -155,7 +155,7 @@ const MyPetInfo = ({ route, navigation }) => {
           onPress: async () => {
             try {
               const response = await axios.post(
-                "http://192.168.3.82/dogcare/deletepet.php",
+                "http://192.168.50.72/dogcare/deletepet.php",
                 { pet_id: pet.pet_id }
               );
               if (response.data.success) {
@@ -219,7 +219,7 @@ const MyPetInfo = ({ route, navigation }) => {
           ) : (
             pet.pet_pic ? (
               <Image
-                source={{ uri: `http://192.168.3.82/dogcare/uploads/${petinfo.pet_pic}` }}
+                source={{ uri: `http://192.168.50.72/dogcare/uploads/${petinfo.pet_pic}` }}
                 style={[styles.petImage, isEditing && styles.imageEditing]}
               />
             ) : (
@@ -254,6 +254,7 @@ const MyPetInfo = ({ route, navigation }) => {
             onChangeText={(text) =>
               setUpdatedPet({ ...updatedPet, breed_name: text })
             }
+            editable={false} // ปิดการแก้ไขค่า
           />
         ) : (
           <Text style={styles.value}>{pet.breed_name}</Text>
@@ -421,7 +422,7 @@ const MyPetInfo = ({ route, navigation }) => {
                 <View style={styles.modalHeader}>
                   <Image
                     source={{
-                      uri: `http://192.168.3.82/dogcare/uploads/${breedInfo.picture}`,
+                      uri: `http://192.168.50.72/dogcare/uploads/${breedInfo.picture}`,
                     }}
                     style={styles.modalImage}
                   />
@@ -446,13 +447,33 @@ const MyPetInfo = ({ route, navigation }) => {
                     <Text style={styles.modalBreedName}>
                       ลักษณะของสุนัขพันธุ์:
                     </Text>
+                    {breedInfo.picturedetail && (
+                      <>
+                        {breedInfo.picturedetail
+                          .split("|")
+                          .map(
+                            (url, index) =>
+                              index === 0 && (
+                                <Image
+                                  key={index}
+                                  source={{
+                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                                  }}
+                                  style={styles.modalImagedetail}
+                                />
+                              )
+                          )}
+                      </>
+                    )}
+                    <Text style={styles.modalBreedName}>
                     {formatTextWithNewLine(breedInfo.nature)}
+                    </Text>
                   </View>
                   <Text style={styles.modalBreedName}>
                     ลักษณะนิสัยของสุนัขพันธุ์ {breedInfo.breed_name}
                   </Text>
                   <Text style={styles.modalText}>{breedInfo.charac}</Text>
-                  <Text style={styles.modalBreedName}>ข้อเสีย</Text>
+                  <Text style={styles.modalBreedName}>ข้อควรระวัง</Text>
                   <Text style={styles.modalText}>{formatTextWithNewLine(breedInfo.problem)}</Text>
                   <Text style={styles.modalBreedName}>โภชนาการ</Text>
                   <Text style={styles.modalText}>
@@ -461,6 +482,24 @@ const MyPetInfo = ({ route, navigation }) => {
                   <Text style={styles.modalBreedName}>
                     ประวัติความเป็นมาของสุนัขพันธุ์
                   </Text>
+                  {breedInfo.picturedetail && (
+                      <>
+                        {breedInfo.picturedetail
+                          .split("|")
+                          .map(
+                            (url, index) =>
+                              index === 1 && (
+                                <Image
+                                  key={index}
+                                  source={{
+                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                                  }}
+                                  style={styles.modalImagedetail}
+                                />
+                              )
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>{breedInfo.record}</Text>
                 </View>
               </ScrollView>
@@ -680,6 +719,12 @@ const styles = StyleSheet.create({
   dateText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  modalImagedetail: {
+    marginTop: 10,
+    width: 300,
+    height: 150,
+    borderRadius: 10,
   },
 });
 
