@@ -465,7 +465,7 @@ const MyPetInfo = ({ route, navigation }) => {
                           )}
                       </>
                     )}
-                    <Text style={styles.modalBreedName}>
+                    <Text style={styles.modalText}>
                     {formatTextWithNewLine(breedInfo.nature)}
                     </Text>
                   </View>

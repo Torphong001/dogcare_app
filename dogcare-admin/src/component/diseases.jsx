@@ -123,7 +123,6 @@ function Diseases() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Diseases ID</TableCell>
               <TableCell>Diseases Name</TableCell>
               <TableCell>Symptoms</TableCell>
               <TableCell>Treatment</TableCell>
@@ -134,7 +133,6 @@ function Diseases() {
             {diseases.length > 0 ? (
               diseases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((disease) => (
                 <TableRow key={disease.diseases_id}>
-                  <TableCell>{disease.diseases_id}</TableCell>
                   <TableCell>{disease.diseases_name}</TableCell>
                   <TableCell>{truncateText(disease.symptom)}</TableCell>
                   <TableCell>{truncateText(disease.treat)}</TableCell>

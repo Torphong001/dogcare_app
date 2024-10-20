@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import Dialog from 'react-native-dialog';
+import Dialog from "react-native-dialog";
 
 const NotiPet = ({ route }) => {
   const { pet_id } = route.params;
@@ -29,20 +29,20 @@ const NotiPet = ({ route }) => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false); // เพิ่ม showDatePicker
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogMessage, setDialogMessage] = useState("");
   const showDialog = (message) => {
     setDialogMessage(message);
     setDialogVisible(true);
   };
 
   const dayOptions = [
-    { label: "Sunday", value: "Su" },
-    { label: "Monday", value: "Mo" },
-    { label: "Tuesday", value: "Tu" },
-    { label: "Wednesday", value: "We" },
-    { label: "Thursday", value: "Th" },
-    { label: "Friday", value: "Fr" },
-    { label: "Saturday", value: "Sa" },
+    { label: "วันอาทิตย์", value: "Su" },
+    { label: "วันจันทร์", value: "Mo" },
+    { label: "วันอังคาร", value: "Tu" },
+    { label: "วันพุธ", value: "We" },
+    { label: "วันพฤหัส", value: "Th" },
+    { label: "วันศุกร์", value: "Fr" },
+    { label: "วันเสาร์", value: "Sa" },
   ];
 
   useEffect(() => {
@@ -124,9 +124,7 @@ const NotiPet = ({ route }) => {
         ]);
         showDialog("เพิ่มการแจ้งเตือนสําเร็จ");
       } else {
-        showDialog(
-          "เพิ่มการแจ้งเตือนไม่สําเร็จ: "
-        );
+        showDialog("เพิ่มการแจ้งเตือนไม่สําเร็จ: ");
       }
     } catch (error) {
       console.error(
@@ -209,27 +207,27 @@ const NotiPet = ({ route }) => {
   }
   const convertDayToThai = (dayCode) => {
     switch (dayCode) {
-      case 'Su':
-        return 'อาทิตย์';
-      case 'Mo':
-        return 'จันทร์';
-      case 'Tu':
-        return 'อังคาร';
-      case 'We':
-        return 'พุธ';
-      case 'Th':
-        return 'พฤหัส';
-      case 'Fr':
-        return 'ศุกร์';
-      case 'Sa':
-        return 'เสาร์';
+      case "Su":
+        return "อาทิตย์";
+      case "Mo":
+        return "จันทร์";
+      case "Tu":
+        return "อังคาร";
+      case "We":
+        return "พุธ";
+      case "Th":
+        return "พฤหัส";
+      case "Fr":
+        return "ศุกร์";
+      case "Sa":
+        return "เสาร์";
       default:
-        return '';
+        return "";
     }
   };
   const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
   return (
@@ -246,8 +244,8 @@ const NotiPet = ({ route }) => {
           {notifications.map((noti, index) => {
             // แปลง noti_day เป็นชื่อวัน
             const formattedDays = noti.noti_day
-              ? noti.noti_day.split('|').map(convertDayToThai).join(' ')
-              : '';
+              ? noti.noti_day.split("|").map(convertDayToThai).join(" ")
+              : "";
 
             return (
               <View key={index} style={styles.card}>
@@ -292,21 +290,24 @@ const NotiPet = ({ route }) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>เพิ่มการแจ้งเตือน</Text>
+            <Text style={styles.titlebox}>หัวข้อการแจ้งเตือน :</Text>
             <TextInput
               style={styles.input}
-              placeholder="หัวข้อการแจ้งเตือน"
+              placeholder=""
               value={notiName}
               onChangeText={setNotiName}
               placeholderTextColor="#ccc"
             />
+            <Text style={styles.titlebox}>รายละเอียดการแจ้งเตือน :</Text>
             <TextInput
-              style={styles.input}
-              placeholder="รายละเอียดการแจ้งเตือน"
+              style={styles.input2}
+              placeholder=""
               value={notiDetail}
               onChangeText={setNotiDetail}
               placeholderTextColor="#ccc"
+              multiline={true}
+              numberOfLines={2} // กำหนดเริ่มต้นให้ยาว 2 บรรทัด
             />
-
             <TouchableOpacity
               onPress={() => setShowTimePicker(true)}
               style={styles.timeButton}
@@ -335,7 +336,7 @@ const NotiPet = ({ route }) => {
               />
             )}
 
-            <Text style={styles.modalSubtitle}>เลือกประเภทการแจ้งเตือน:</Text>
+            <Text style={styles.titlebox}>เลือกประเภทการแจ้งเตือน:</Text>
 
             <View style={styles.dayTypeContainer}>
               {["only", "everyday", "specific"].map((type) => (
@@ -349,10 +350,10 @@ const NotiPet = ({ route }) => {
                 >
                   <Text style={styles.dayTypeButtonText}>
                     {type === "only"
-                      ? "Only once"
+                      ? "ครั้งเดียว"
                       : type === "everyday"
-                      ? "Everyday"
-                      : "Specific days"}
+                      ? "ทุกวัน"
+                      : "รายวัน"}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -421,15 +422,13 @@ const NotiPet = ({ route }) => {
                 onPress={handleAddNotification}
                 color="#FF9090"
               />
-              <Button title="Cancel" onPress={handleCancel} />
+              <Button title="Cancel" onPress={handleCancel} color={"red"} />
             </View>
           </View>
         </View>
       </Modal>
       <Dialog.Container visible={dialogVisible}>
-        <Dialog.Description>
-          {dialogMessage}
-        </Dialog.Description>
+        <Dialog.Description>{dialogMessage}</Dialog.Description>
         <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
       </Dialog.Container>
     </View>
@@ -521,6 +520,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
   },
+  input2: {
+    height: 60, // ปรับความสูงให้พอเหมาะกับ 2 บรรทัด
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    
+  },
   timeButton: {
     backgroundColor: "#FF9090",
     padding: 10,
@@ -552,6 +560,8 @@ const styles = StyleSheet.create({
   },
   dayTypeButtonText: {
     color: "#333",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   dayButton: {
     backgroundColor: "#f0f0f0",
@@ -564,6 +574,9 @@ const styles = StyleSheet.create({
   },
   dayButtonText: {
     color: "#333",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   selectedDayButtonText: {
     color: "#fff",
@@ -572,6 +585,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 15,
+  },
+  dateButtonText: {
+    color: "#333",
+    fontSize: 16,
+    fontWeight: "bold",
+    backgroundColor: "#FF9090",
+    padding: 10,
+    borderRadius: 8,
+  },
+  titlebox: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
 });
 

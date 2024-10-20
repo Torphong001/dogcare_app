@@ -163,7 +163,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
       <View style={styles.inputContainer}>
         <TextInput
           style={[styles.input, { paddingRight: 60 }]}
-          placeholder="ความสูงสัตว์เลี้ยง"
+          placeholder=""
           value={petHeight}
           onChangeText={setPetHeight}
           keyboardType="numeric"

@@ -16,6 +16,7 @@ import MyPetInfo from "./component/MyPetInfo";
 import Notipet from "./component/Notipet";
 import Notiuser from "./component/Notiuser";
 import TestWebView from "./component/TestWebView";
+import DiseaseScreen from "./component/DiseaseScreen";
 import axios from 'axios';
 import Toast from 'react-native-toast-message'; // นำเข้า Toast
 
@@ -309,6 +310,18 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
         options={{
           tabBarLabel: "แชทกับบอท",
           title: "แชทกับบอท",
+          headerTitleAlign: "center", // Center the title
+          headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
+          headerTintColor: "#fff", //
+          headerTitleStyle: { fontWeight: "bold" },
+        }} // Thai label for BreedScreen
+      />
+          <Tab.Screen
+        name="DiseaseScreen"
+        component={DiseaseScreen}
+        options={{
+          tabBarLabel: "ประเมินโรค",
+          title: "ประเมินโรค",
           headerTitleAlign: "center", // Center the title
           headerStyle: { backgroundColor: "#FF9090" }, // Set header background color
           headerTintColor: "#fff", //
