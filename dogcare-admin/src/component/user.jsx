@@ -65,6 +65,11 @@ function User() {
             user.user_id === userId ? { ...user, status: newStatus } : user
           )
         );
+        setFilteredUsers((prevFilteredUsers) =>
+          prevFilteredUsers.map((user) =>
+            user.user_id === userId ? { ...user, status: newStatus } : user
+          )
+        );
         // Set success message and open Snackbar
         setSnackbarMessage("เปลี่ยนสถานะสําเร็จ");
         setSnackbarOpen(true);
@@ -264,7 +269,7 @@ function User() {
                     <TableCell>
                       {user.picture ? (
                         <Avatar
-                          src={`http://localhost/dogcare/userimages/${user.picture}`}
+                          src={`http://localhost/dogcare/uploads/${user.picture}`}
                           alt="User Picture"
                         />
                       ) : (
@@ -290,6 +295,7 @@ function User() {
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }} // Positioning Snackbar
       >
         <Alert onClose={handleSnackbarClose} severity="success">
           {snackbarMessage}

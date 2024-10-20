@@ -236,7 +236,7 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           multiline
           rows={4} // กำหนดให้สูง 3 บรรทัด
         />
-
+        
         {/* Submit Button */}
         <Box display="flex" justifyContent="center" mt={3}>
           <Button variant="contained" color="primary" onClick={handleSubmit}>

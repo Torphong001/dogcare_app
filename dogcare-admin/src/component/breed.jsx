@@ -155,7 +155,7 @@ function Breed() {
               <TableCell sx={{ fontWeight: 'bold' }}>น้ำหนัก</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>ส่วนสูง</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>อายุขัย</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>สถานะ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
