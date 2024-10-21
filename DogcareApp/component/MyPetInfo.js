@@ -174,25 +174,62 @@ const MyPetInfo = ({ route, navigation }) => {
       { cancelable: true }
     );
   };
-  const pickImage = async () => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-        return;
-      }
+  const pickImageFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return;
     }
-  
+
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All, // เปลี่ยนเป็น All เพื่อรองรับทุกประเภท
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-  
+
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
     }
+  };
+
+  const takePhotoWithCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera permissions to make this work!');
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
+    }
+  };
+
+  const pickImage  = () => {
+    Alert.alert(
+      "เลือกรูปภาพ",
+      "เลือกแหล่งที่มาของรูปภาพ",
+      [
+        {
+          text: "ถ่ายรูปใหม่",
+          onPress: takePhotoWithCamera,
+        },
+        {
+          text: "เลือกรูปคลัง",
+          onPress: pickImageFromGallery,
+        },
+        {
+          text: "ยกเลิก",
+          style: "cancel",
+        },
+      ]
+    );
   };
   const formatTextWithNewLine = (text) => {
     // ตรวจสอบว่า text เป็น undefined หรือไม่ ถ้าเป็น ให้ส่งกลับเป็น Text ว่าง

@@ -97,13 +97,11 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     }
   };
 
-  const pickImage = async () => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-        return;
-      }
+  const pickImageFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return;
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -115,8 +113,46 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
-      setPetPic(result.assets[0].uri);
     }
+  };
+
+  const takePhotoWithCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera permissions to make this work!');
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
+    }
+  };
+
+  const pickImage  = () => {
+    Alert.alert(
+      "เลือกรูปภาพ",
+      "เลือกแหล่งที่มาของรูปภาพ",
+      [
+        {
+          text: "ถ่ายรูปใหม่",
+          onPress: takePhotoWithCamera,
+        },
+        {
+          text: "เลือกรูปคลัง",
+          onPress: pickImageFromGallery,
+        },
+        {
+          text: "ยกเลิก",
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   return (
@@ -208,7 +244,6 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
         <Dialog.Description>
           {dialogMessage}
         </Dialog.Description>
-        <Dialog.Button label="ตกลง" onPress={() => setDialogVisible(false)} />
       </Dialog.Container>
     </View>
   );

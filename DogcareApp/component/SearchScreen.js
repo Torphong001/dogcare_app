@@ -28,31 +28,57 @@ const SearchScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current; // Animation value for modal fade in/out
 
   const handleReset = () => {
-    setTopBreeds([]);  // เคลียร์ค่า topBreeds
+    setTopBreeds([]); // เคลียร์ค่า topBreeds
     setImageUri(null); // เคลียร์ค่า imageUri
   };
   // ฟังก์ชันสำหรับเลือกภาพ
   const pickImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      Alert.alert("ต้องอนุญาตการเข้าถึงคลังภาพก่อนถึงจะเลือกภาพได้");
+      Alert.alert("ต้องอนุญาตการเข้าถึงกล้องและคลังภาพ");
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    Alert.alert(
+      "เลือกตัวเลือก",
+      "คุณต้องการทำอะไร?",
+      [
+        {
+          text: "ถ่ายรูป",
+          onPress: async () => {
+            const result = await ImagePicker.launchCameraAsync({
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
 
-    if (!result.canceled && result.assets) {
-      setImageUri(result.assets[0].uri);
-      setShowBreedButton(true);
-      setTopBreeds([]); // รีเซ็ตผลการระบุเมื่อเลือกภาพใหม่
-    }
+            if (!result.canceled && result.assets) {
+              setImageUri(result.assets[0].uri);
+              setShowBreedButton(true);
+            }
+          },
+        },
+        {
+          text: "เลือกรูปจากคลัง",
+          onPress: async () => {
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
+
+            if (!result.canceled && result.assets) {
+              setImageUri(result.assets[0].uri);
+              setShowBreedButton(true);
+            }
+          },
+        },
+        { text: "ยกเลิก", style: "cancel" },
+      ],
+      { cancelable: true }
+    );
   };
   useEffect(() => {
     if (modalVisible) {
@@ -140,25 +166,25 @@ const SearchScreen = () => {
   return (
     <View style={styles.container}>
       {topBreeds.length <= 0 && (
-      <TouchableOpacity
-        onPress={pickImage}
-        style={styles.detailButtonselect}
-        activeOpacity={0.7} // ลดความเข้มของปุ่มเมื่อกด
-      >
-        <Text style={styles.buttonText}>เลือกรูปภาพ</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={pickImage}
+          style={styles.detailButtonselect}
+          activeOpacity={0.7} // ลดความเข้มของปุ่มเมื่อกด
+        >
+          <Text style={styles.buttonText}>เลือกรูปภาพ</Text>
+        </TouchableOpacity>
       )}
       {topBreeds.length > 0 && (
-      <TouchableOpacity
-        onPress={handleReset}
-        style={styles.detailButtonselect}
-        activeOpacity={0.7} // ลดความเข้มของปุ่มเมื่อกด
-      >
-        <Text style={styles.buttonText}>เริ่มใหม่</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleReset}
+          style={styles.detailButtonselect}
+          activeOpacity={0.7} // ลดความเข้มของปุ่มเมื่อกด
+        >
+          <Text style={styles.buttonText}>เริ่มใหม่</Text>
+        </TouchableOpacity>
       )}
       {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
-      { showBreedButton && (
+      {showBreedButton && (
         <TouchableOpacity
           onPress={handleBreedDetection}
           style={styles.detailButtonselect2}
@@ -168,43 +194,50 @@ const SearchScreen = () => {
         </TouchableOpacity>
       )}
       {topBreeds.length > 0 && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultHeader}>ผลตรวจสอบสายพันธุ์</Text>
-          <View style={styles.breedHeader}>
+  <View style={styles.resultContainer}>
+    {/* เช็คว่าเปอร์เซ็นต์ที่มากที่สุดเกิน 50% หรือไม่ */}
+    {parseFloat(topBreeds[0].percentage) < 50 ? (
+      <Text style={styles.noBreedText}>ไม่สามารถระบุสายพันธุ์ได้</Text>
+    ) : (
+      <>
+        <Text style={styles.resultHeader}>ผลตรวจสอบสายพันธุ์</Text>
+        <View style={styles.breedHeader}>
+          {/* Column 1: ลำดับที่ */}
+          <Text style={styles.headerText2}>ลำดับ</Text>
+
+          {/* Column 2: ชื่อสายพันธุ์ */}
+          <Text style={styles.headerText}>ชื่อสายพันธุ์</Text>
+
+          {/* Column 3: เปอร์เซ็น */}
+          <Text style={styles.headerText}>เปอร์เซ็น</Text>
+        </View>
+
+        {topBreeds.map((breed, index) => (
+          <View key={index} style={styles.breedRow}>
             {/* Column 1: ลำดับที่ */}
-            <Text style={styles.headerText2}>ลำดับ</Text>
+            <Text style={styles.breedIndex}>{index + 1}.</Text>
 
             {/* Column 2: ชื่อสายพันธุ์ */}
-            <Text style={styles.headerText}>ชื่อสายพันธุ์</Text>
+            <Text style={styles.breedName}>{breed.name}</Text>
 
             {/* Column 3: เปอร์เซ็น */}
-            <Text style={styles.headerText}>เปอร์เซ็น</Text>
+            <Text style={styles.breedPercentage}>{breed.percentage}%</Text>
 
-            
+            {/* Column 4: ดูรายละเอียด */}
+            <TouchableOpacity
+              onPress={() => handleBreedDetails(breed.name)}
+              style={styles.detailButton}
+            >
+              <Text style={styles.detailButtonText}>ดูเพิ่มเติม</Text>
+            </TouchableOpacity>
           </View>
+        ))}
+      </>
+    )}
+  </View>
+)}
 
-          {topBreeds.map((breed, index) => (
-            <View key={index} style={styles.breedRow}>
-              {/* Column 1: ลำดับที่ */}
-              <Text style={styles.breedIndex}>{index + 1}.</Text>
 
-              {/* Column 2: ชื่อสายพันธุ์ */}
-              <Text style={styles.breedName}>{breed.name}</Text>
-
-              {/* Column 3: เปอร์เซ็น */}
-              <Text style={styles.breedPercentage}>{breed.percentage}%</Text>
-
-              {/* Column 4: ดูรายละเอียด */}
-              <TouchableOpacity
-                onPress={() => handleBreedDetails(breed.name)}
-                style={styles.detailButton}
-              >
-                <Text style={styles.detailButtonText}>ดูเพิ่มเติม</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
       <Modal
         transparent={true}
         visible={modalVisible}
@@ -249,25 +282,23 @@ const SearchScreen = () => {
                     ลักษณะของสุนัขพันธุ์:
                   </Text>
                   {selectedBreed.picturedetail && (
-                      <>
-                        {selectedBreed.picturedetail
-                          .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 0 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
-                          )}
-                      </>
-                    )}
-                    <Text style={styles.modalText}>
-                  {formatTextWithNewLine(selectedBreed.nature)}
+                    <>
+                      {selectedBreed.picturedetail.split("|").map(
+                        (url, index) =>
+                          index === 0 && (
+                            <Image
+                              key={index}
+                              source={{
+                                uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                              }}
+                              style={styles.modalImagedetail}
+                            />
+                          )
+                      )}
+                    </>
+                  )}
+                  <Text style={styles.modalText}>
+                    {formatTextWithNewLine(selectedBreed.nature)}
                   </Text>
                 </View>
                 <Text style={styles.modalBreedName}>
@@ -288,24 +319,22 @@ const SearchScreen = () => {
                   ประวัติความเป็นมาของสุนัขพันธุ์
                 </Text>
                 <Text style={styles.modalText}>
-                {selectedBreed.picturedetail && (
-                      <>
-                        {selectedBreed.picturedetail
-                          .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 1 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
-                          )}
-                      </>
-                    )}
+                  {selectedBreed.picturedetail && (
+                    <>
+                      {selectedBreed.picturedetail.split("|").map(
+                        (url, index) =>
+                          index === 1 && (
+                            <Image
+                              key={index}
+                              source={{
+                                uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                              }}
+                              style={styles.modalImagedetail}
+                            />
+                          )
+                      )}
+                    </>
+                  )}
                   {formatTextWithNewLine(selectedBreed.record)}
                 </Text>
               </View>
@@ -343,16 +372,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   breedRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between', // จัดเรียงแต่ละคอลัมน์ให้ห่างกันอย่างเท่ากัน
-    alignItems: 'center', // จัดให้อยู่กึ่งกลางในแนวตั้ง
+    flexDirection: "row",
+    justifyContent: "space-between", // จัดเรียงแต่ละคอลัมน์ให้ห่างกันอย่างเท่ากัน
+    alignItems: "center", // จัดให้อยู่กึ่งกลางในแนวตั้ง
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
   breedIndex: {
     flex: 1, // กำหนดขนาด flex เพื่อให้ขนาดของคอลัมน์เหมาะสม
-    textAlign: 'left',
+    textAlign: "left",
     paddingLeft: 10,
     width: "10%",
   },
@@ -467,23 +496,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   breedHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 10,
-    backgroundColor: '#f0f0f0', // สีพื้นหลังของหัวคอลัมน์
+    backgroundColor: "#f0f0f0", // สีพื้นหลังของหัวคอลัมน์
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   headerText: {
     flex: 2, // เพื่อให้มีขนาดเท่ากันกับข้อมูลในแต่ละคอลัมน์
-    fontWeight: 'bold',
-    textAlign: 'left',
+    fontWeight: "bold",
+    textAlign: "left",
     paddingRight: 0,
   },
   headerText2: {
     flex: 1, // เพื่อให้มีขนาดเท่ากันกับข้อมูลในแต่ละคอลัมน์
-    fontWeight: 'bold',
-    textAlign: 'left',
+    fontWeight: "bold",
+    textAlign: "left",
     paddingRight: 0,
   },
   modalImagedetail: {
@@ -491,6 +520,12 @@ const styles = StyleSheet.create({
     width: 300,
     height: 150,
     borderRadius: 10,
+  },
+  noBreedText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 
