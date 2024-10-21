@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button, Typography } from '@mui/material';
+import { Modal, Box, TextField, Button, Typography, Grid, IconButton } from '@mui/material';
 import axios from 'axios';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
   const [formData, setFormData] = useState({
@@ -15,10 +17,13 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
     problem: '',
     Nutrition: '',
     record: '',
-    picture: ''
+    picture: '',
+    picturedetail: '' // เพิ่มเพื่อจัดการรูปหลายไฟล์
   });
 
-  const [selectedFile, setSelectedFile] = useState(null); // State for selected file
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [additionalPictures, setAdditionalPictures] = useState([]);
+  const [newPictures, setNewPictures] = useState([]); // เก็บรูปใหม่ที่เพิ่มเข้ามา
 
   useEffect(() => {
     if (breedData) {
@@ -34,8 +39,11 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
         problem: breedData.problem,
         Nutrition: breedData.Nutrition,
         record: breedData.record,
-        picture: breedData.picture
+        picture: breedData.picture,
+        picturedetail: breedData.picturedetail || '' // เพิ่มข้อมูลรูปหลายไฟล์
       });
+
+      setAdditionalPictures(breedData.picturedetail ? breedData.picturedetail.split('|') : []);
     }
   }, [breedData]);
 
@@ -50,41 +58,87 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(URL.createObjectURL(file)); // Preview the selected image
+      setSelectedFile(URL.createObjectURL(file));
       setFormData({
         ...formData,
-        picture: file // Store the file for uploading
+        picture: file
       });
     }
   };
 
   const handleSubmit = () => {
     const formDataToSend = new FormData();
+  
+    // Append standard form data
     for (const key in formData) {
       formDataToSend.append(key, formData[key]);
     }
+  
+    // Append the main picture if it exists
     if (formData.picture) {
-      formDataToSend.append('picture', formData.picture); // Append the picture file
+      formDataToSend.append('main_picture', formData.picture);
     }
-
+  
+    // Prepare to collect existing and new pictures
+    const finalAdditionalPictures = [...additionalPictures];
+    
+    // Check if there are new pictures to append
+    if (newPictures.length > 0) {
+      newPictures.forEach((file) => {
+        formDataToSend.append('additional_pictures[]', file); // ส่งไฟล์จริงๆ
+        finalAdditionalPictures.push(file.name); // หรือใช้ชื่อไฟล์ใหม่
+      });
+    }
+  
+    // Log the additional pictures for debugging
+    console.log('Final Additional Pictures:', finalAdditionalPictures);
+  
+    // Append existing additional pictures (that are not deleted) to formData
+    finalAdditionalPictures.forEach((picture) => {
+      formDataToSend.append('additional_pictures[]', picture); // ชื่อรูปเพิ่มเติม
+    });
+    
+    // Make the POST request to the API
     axios.post('http://localhost/dogcare/admin/editbreed.php', formDataToSend, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    .then((response) => {
+      if (response.data.success) {
+        onBreedUpdated();
+        onClose();
+      } else {
+        alert(response.data.message || 'Failed to update breed.');
       }
     })
-      .then((response) => {
-        if (response.data.success) {
-          onBreedUpdated();
-          onClose();
-        } else {
-          alert(response.data.message || 'Failed to update breed.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error updating breed:', error);
-        alert('Network error.');
-      });
+    .catch((error) => {
+      console.error('Error updating breed:', error);
+      alert('Network error.');
+    });
   };
+  
+
+  
+  
+  
+  const handleAdditionalFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && additionalPictures.length + newPictures.length < 4) {
+      setNewPictures([...newPictures, file]); // เก็บรูปใหม่
+    }
+  };
+  const handleRemovePicture = (index, isNew) => {
+    if (isNew) {
+      const updatedNewPictures = newPictures.filter((_, i) => i !== index);
+      setNewPictures(updatedNewPictures);
+    } else {
+      const updatedPictures = additionalPictures.filter((_, i) => i !== index);
+      setAdditionalPictures(updatedPictures);
+    }
+  };
+  
+  // แยกไฟล์รูปจาก picturedetail โดยใช้ | เป็นตัวคั่น
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -94,8 +148,8 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 500,
-          maxHeight: '80vh',
+          width: 600,
+          maxHeight: '90vh',
           bgcolor: 'background.paper',
           boxShadow: 24,
           p: 4,
@@ -103,12 +157,11 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           overflowY: 'auto',
         }}
       >
-        {/* Title */}
         <Typography variant="h6" textAlign="center" gutterBottom>
           แก้ไขข้อมูลสายพันธุ์สุนัข
         </Typography>
 
-        {/* Image Preview */}
+        {/* Preview รูปหลัก */}
         <Box display="flex" justifyContent="center" mb={2}>
           <label style={{ cursor: 'pointer' }}>
             <img
@@ -123,19 +176,22 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
                 transition: 'filter 0.3s',
                 filter: 'brightness(1)',
               }}
-              onMouseEnter={(e) => (e.target.style.filter = 'brightness(0.5)')} // Darken on hover
-              onMouseLeave={(e) => (e.target.style.filter = 'brightness(1)')} // Restore on leave
+              onMouseEnter={(e) => (e.target.style.filter = 'brightness(0.5)')}
+              onMouseLeave={(e) => (e.target.style.filter = 'brightness(1)')}
             />
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              style={{ display: 'none' }} // Hide the file input
+              style={{ display: 'none' }}
             />
           </label>
         </Box>
 
-        {/* Form Fields */}
+        
+
+        {/* ฟิลด์กรอกข้อมูล */}
+        <Box mt={3}>
         <TextField
           fullWidth
           label="ชื่อสายพันธุ์"
@@ -236,8 +292,83 @@ function EditBreedModal({ open, onClose, breedData, onBreedUpdated }) {
           multiline
           rows={4} // กำหนดให้สูง 3 บรรทัด
         />
-        
-        {/* Submit Button */}
+          {/* ฟิลด์อื่นๆ */}
+        </Box>
+        {/* Preview รูปหลายไฟล์ */}
+        <Typography variant="h7" gutterBottom >รูปภาพเพิ่มเติม :</Typography>
+
+        <Grid container spacing={2}>
+          {/* แสดงรูปเดิมที่มีอยู่แล้ว */}
+          {additionalPictures.map((file, index) => (
+            <Grid item xs={4} key={index} position="relative">
+              <img
+                src={`http://localhost/dogcare/uploads/${file}`}
+                alt={`รูปเพิ่มเติม ${index + 1}`}
+                style={{
+                  width: '100%',
+                  height: '100px',
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+              />
+              <IconButton
+                size="small"
+                sx={{ position: 'absolute', top: 0, right: 0 }}
+                onClick={() => handleRemovePicture(index, false)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Grid>
+          ))}
+
+          {/* แสดงรูปใหม่ที่ผู้ใช้เลือก */}
+          {newPictures.map((file, index) => (
+            <Grid item xs={4} key={index} position="relative">
+              <img
+                src={URL.createObjectURL(file)} // พรีวิวรูปใหม่
+                alt={`รูปใหม่ ${index + 1}`}
+                style={{
+                  width: '100%',
+                  height: '100px',
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+              />
+              <IconButton
+                size="small"
+                sx={{ position: 'absolute', top: 0, right: 0 }}
+                onClick={() => handleRemovePicture(index, true)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Grid>
+          ))}
+
+          {/* กรอบรูป "+" สำหรับเพิ่มรูปใหม่ */}
+          {(additionalPictures.length + newPictures.length) < 4 && (
+            <Grid item xs={4}>
+              <label style={{ cursor: 'pointer' }}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  height="100px"
+                  border="2px dashed #ccc"
+                  borderRadius="8px"
+                >
+                  <AddIcon fontSize="large" />
+                </Box>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAdditionalFileChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </Grid>
+          )}
+        </Grid>
+        {/* ปุ่มบันทึก */}
         <Box display="flex" justifyContent="center" mt={3}>
           <Button variant="contained" color="primary" onClick={handleSubmit}>
             บันทึก

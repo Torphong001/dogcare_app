@@ -9,6 +9,8 @@ import Login from './component/Login';
 import AddBreed from './component/addbreed';
 import Diseases from './component/diseases';
 import AddDiseases from './component/adddiseases';
+import Symptom from './component/symptom';
+import AddSymptom from './component/addsymptom';
 import './App.css';
 
 // PrivateRoute component to handle protected routes
@@ -35,6 +37,8 @@ function App() {
             <Route path="/Login" element={<Login />} />
             <Route path="/addbreed" element={<AddBreed />} />
             <Route path="/adddiseases" element={<AddDiseases />} />
+            <Route path="/addsymptom" element={<AddSymptom />} />
+            <Route path="/Symptom" element={<Symptom />} />
 
           </Routes>
         </div>

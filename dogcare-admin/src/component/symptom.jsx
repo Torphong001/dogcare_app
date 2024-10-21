@@ -17,38 +17,35 @@ import {
   DialogContentText, 
   TablePagination,
   Box,
-  TextField,
   InputAdornment,
   IconButton,
+  TextField,
 } from '@mui/material';
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from 'react-router-dom';
-import EditDiseasesModal from './editdiseases';  // Import your modal
+import EditSymptomModal from './editsymptom'; 
 
-function Diseases() {
-  const [diseases, setDiseases] = useState([]);
+function Symptom() {
+  const [symptom, setSymptom] = useState([]);
   const [error, setError] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);  // State for Edit Modal
-  const [diseaseToDelete, setDiseaseToDelete] = useState(null);
-  const [diseaseToEdit, setDiseaseToEdit] = useState(null);  // State for disease to edit
+  const [symptomToDelete, setSymptomToDelete] = useState(null);
+  const [symptomToEdit, setSymptomToEdit] = useState(null);  // State for disease to edit
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(8); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); 
   const navigate = useNavigate();
 
-  const truncateText = (text, maxLength = 50) => {
-    return text && text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-  };
 
   useEffect(() => {
-    fetchDiseases();
+    fetchSymptom();
   }, []);
 
-  const fetchDiseases = () => {
-    axios.get('http://localhost/dogcare/admin/diseases.php')
+  const fetchSymptom = () => {
+    axios.get('http://localhost/dogcare/admin/symptom.php')
       .then((response) => {
         if (Array.isArray(response.data)) {
-          setDiseases(response.data);
+            setSymptom(response.data);
         } else {
           setError('Invalid data format from API');
         }
@@ -58,23 +55,23 @@ function Diseases() {
       });
   };
 
-  const handleDeleteClick = (disease) => {
-    setDiseaseToDelete(disease);
+  const handleDeleteClick = (symptom) => {
+    setSymptomToDelete(symptom);
     setDeleteDialogOpen(true);
   };
 
-  const handleEditClick = (disease) => {
-    setDiseaseToEdit(disease);  // Set the disease to edit
+  const handleEditClick = (symptom) => {
+    setSymptomToEdit(symptom);  // Set the disease to edit
     setEditModalOpen(true);     // Open the edit modal
   };
 
   const confirmDelete = () => {
-    axios.delete('http://localhost/dogcare/admin/deletediseases.php', {
-      data: { diseases_id: diseaseToDelete.diseases_id }
+    axios.delete('http://localhost/dogcare/admin/deletesymptom.php.', {
+      data: { symptom_id: symptomToDelete.symptom_id }
     })
     .then((response) => {
       if (response.data.status === 'success') {
-        fetchDiseases();
+        fetchSymptom();
       } else {
         setError(response.data.message);
       }
@@ -84,18 +81,18 @@ function Diseases() {
     })
     .finally(() => {
       setDeleteDialogOpen(false);
-      setDiseaseToDelete(null);
+      setSymptomToDelete(null);
     });
   };
 
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
-    setDiseaseToDelete(null);
+    setSymptomToDelete(null);
   };
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
-    setDiseaseToEdit(null);
+    setSymptomToEdit(null);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -112,13 +109,13 @@ function Diseases() {
   }
 
   return (
-    <Box sx={{ padding: 4, backgroundColor: '#FFE1E1', minHeight: '100vh' }}>
+    <Box sx={{ padding: 4, backgroundColor: '#FFE1E1', minHeight: '100vh', width: '70%', margin: '0 auto' }}>
         <Typography variant="h4" sx={{ marginBottom: 4, fontWeight: 'bold', textAlign: 'center', color: '#000000' }}>
-          ข้อมูลโรค
+          ข้อมูลอาการ
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <TextField
-          label="ค้นหาโรค"
+          label="ค้นหาอาการ"
           variant="outlined"
           // value={searchQuery}
           // onChange={handleSearchChange}
@@ -136,44 +133,38 @@ function Diseases() {
         <Button 
           variant="contained" 
           color="secondary" 
-          onClick={() => navigate('/adddiseases')}
+          onClick={() => navigate('/addsymptom')}
           sx={{ backgroundColor: '#4caf50' }}
         >
-          เพิ่มข้อมูลโรค
+          เพิ่มอาการ
         </Button>
       </Box>
       <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-        
         <Table>
         <TableHead sx={{ backgroundColor: '#FF8D8D' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>ชื่อโรค</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>อาการ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>วิธีการป้องกัน</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' , textAlign: 'center' }}>ชื่ออาการ</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {diseases.length > 0 ? (
-              diseases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((disease) => (
-                <TableRow key={disease.diseases_id}>
-                  <TableCell>{disease.diseases_name}</TableCell>
-                  <TableCell>{truncateText(disease.symptom)}</TableCell>
-                  <TableCell>{truncateText(disease.treat)}</TableCell>
-                  <TableCell>
+            {symptom.length > 0 ? (
+              symptom.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((symptom) => (
+                <TableRow key={symptom.symptom_id}>
+                  <TableCell align='center'>{symptom.symptom_name}</TableCell>
+                  <TableCell align="center" >
                     <Button 
                       variant="outlined" 
-                      color="primary"  
-                      onClick={() => handleEditClick(disease)}  // Open edit modal
-                      sx={{ mr: 1 }}
+                      color="primary" 
+                      onClick={() => handleEditClick(symptom)}  // Open edit modal
+                      style={{ marginRight: '8px' }}
                     >
                       แก้ไข
                     </Button>
                     <Button 
                       variant="outlined" 
-                      color="error" 
-                      onClick={() => handleDeleteClick(disease)}
-                      sx={{ mr: 1 }}
+                      color="error"  
+                      onClick={() => handleDeleteClick(symptom)}
                     >
                       ลบ
                     </Button>
@@ -182,17 +173,15 @@ function Diseases() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ color: 'red', fontStyle: 'italic' }}>
-                  ไม่พบข้อมูลที่ค้นหา
-                </TableCell>
+                <TableCell colSpan={5}>ไม่พบข้อมูลอาการ</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[8]}
+          rowsPerPageOptions={[10]}
           component="div"
-          count={diseases.length}
+          count={symptom.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -205,33 +194,33 @@ function Diseases() {
         open={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
       >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>ยืนยันการลบ</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this disease?
+            คุณต้องการลบอาการ {symptomToDelete && symptomToDelete.symptom_name} หรือไม่
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            ยกเลิก
           </Button>
           <Button onClick={confirmDelete} color="secondary">
-            Delete
+            ยืนยันการลบ
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Edit Modal */}
-      {diseaseToEdit && (
-        <EditDiseasesModal 
+      {symptomToEdit && (
+        <EditSymptomModal 
           open={editModalOpen}
           onClose={handleCloseEditModal}
-          diseaseData={diseaseToEdit}
-          onDiseaseUpdated={fetchDiseases}  // Refresh diseases after update
+          symptomData={symptomToEdit}
+          onSymptomUpdated={fetchSymptom}  // Refresh diseases after update
         />
       )}
     </Box>
   );
 }
 
-export default Diseases;
+export default Symptom;

@@ -145,7 +145,7 @@ function Breed() {
           เพิ่มสายพันธุ์
         </Button>
       </Box>
-      <TableContainer component={Paper} sx={{ mt: 2, backgroundColor: '#f9f9f9' }}>
+      <TableContainer component={Paper} style={{ marginTop: '20px' }}>
         <Table>
           <TableHead sx={{ backgroundColor: '#FF8D8D' }}>
             <TableRow>

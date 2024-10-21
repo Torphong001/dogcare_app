@@ -472,8 +472,44 @@ const MyPetInfo = ({ route, navigation }) => {
                   <Text style={styles.modalBreedName}>
                     ลักษณะนิสัยของสุนัขพันธุ์ {breedInfo.breed_name}
                   </Text>
+                  {breedInfo.picturedetail && (
+                      <>
+                        {breedInfo.picturedetail
+                          .split("|")
+                          .map(
+                            (url, index) =>
+                              index === 1 && (
+                                <Image
+                                  key={index}
+                                  source={{
+                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                                  }}
+                                  style={styles.modalImagedetail}
+                                />
+                              )
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>{breedInfo.charac}</Text>
                   <Text style={styles.modalBreedName}>ข้อควรระวัง</Text>
+                  {breedInfo.picturedetail && (
+                      <>
+                        {breedInfo.picturedetail
+                          .split("|")
+                          .map(
+                            (url, index) =>
+                              index === 2 && (
+                                <Image
+                                  key={index}
+                                  source={{
+                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
+                                  }}
+                                  style={styles.modalImagedetail}
+                                />
+                              )
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>{formatTextWithNewLine(breedInfo.problem)}</Text>
                   <Text style={styles.modalBreedName}>โภชนาการ</Text>
                   <Text style={styles.modalText}>
@@ -488,7 +524,7 @@ const MyPetInfo = ({ route, navigation }) => {
                           .split("|")
                           .map(
                             (url, index) =>
-                              index === 1 && (
+                              index === 3 && (
                                 <Image
                                   key={index}
                                   source={{
