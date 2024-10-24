@@ -44,7 +44,7 @@ const App = () => {
   useEffect(() => {
     const fetchNotifications = async (token) => {
       try {
-          const response = await axios.get('http://192.168.50.72/dogcare/getnotiall.php', {
+          const response = await axios.get('http://192.168.3.117/dogcare/getnotiall.php', {
               headers: {
                   Authorization: `Bearer ${token}`,
               },
@@ -64,7 +64,7 @@ const App = () => {
                       await sendLineNotification(userToken,notification);
   
                       // อัปเดต noti_status เป็น F
-                      await axios.post('http://192.168.50.72/dogcare/updatenoti.php', {
+                      await axios.post('http://192.168.3.117/dogcare/updatenoti.php', {
                           noti_id: notification.noti_id,
                           noti_status: 'F',
                       });
@@ -90,7 +90,7 @@ const App = () => {
 const sendLineNotification = async (userToken, notification) => {
   try {
       // Fetch user_id_line from your API
-      const userInfoResponse = await axios.get("http://192.168.50.72/dogcare/getuser_lineid.php", {
+      const userInfoResponse = await axios.get("http://192.168.3.117/dogcare/getuser_lineid.php", {
           headers: {
               Authorization: `Bearer ${userToken}`
           }
@@ -104,13 +104,13 @@ const sendLineNotification = async (userToken, notification) => {
       }
       console.log(notification.noti_pet_id)
       // Fetch pet details using the notification's pet ID
-      const petResponse = await axios.get(`http://192.168.50.72/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
+      const petResponse = await axios.get(`http://192.168.3.117/dogcare/getpetnameline.php?pet_id=${notification.noti_pet_id}`);
       const pet = petResponse.data;
 
       console.log(pet)
 
       // Prepare the message
-      const messageText = `แจ้งเตือน\nชื่อแจ้งเตือน: ${notification.noti_name}\nชื่อสุนัข: ${pet.pet_name}\nชื่อสุนัข: ${notification.noti_detail}`;
+      const messageText = `แจ้งเตือน\nชื่อแจ้งเตือน: ${notification.noti_name}\nชื่อสุนัข: ${pet.pet_name}\nรายละเอียด: ${notification.noti_detail}`;
 
       // Send the LINE notification
       const response = await axios.post(
@@ -152,9 +152,6 @@ const sendLineNotification = async (userToken, notification) => {
               notifications={notifications}
             />
           )}
-        </Stack.Screen>
-        <Stack.Screen name="Login">
-          {(props) => <LoginScreen {...props} handleLogin={setUserToken} />}
         </Stack.Screen>
         <Stack.Screen name="Notiuser" 
           options={{
@@ -249,10 +246,14 @@ const TabNavigator = ({ userToken, setUserToken, notifications }) => {
             iconName = "log-in";
           } else if (route.name === "UserInfo") {
             iconName = "person";
-          } else if (route.name === "Breed" || route.name === "Mypet") {
+          } else if (route.name === "Breed") {
+            iconName = "home";
+          } else if (route.name === "Mypet") {
             iconName = "paw";
           } else if (route.name === "TestWebView") {
             iconName = "chatbubble";
+          } else if (route.name === "DiseaseScreen") {
+            iconName = "folder";
           }
           return <Icon name={iconName} size={size} color={color} />;
         },

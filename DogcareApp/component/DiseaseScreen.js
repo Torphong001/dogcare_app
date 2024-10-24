@@ -7,12 +7,15 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
+  TextInput,  // นำเข้า TextInput
 } from "react-native";
 import axios from "axios";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 const DiseaseScreen = () => {
   const [symptoms, setSymptoms] = useState([]);
+  const [filteredSymptoms, setFilteredSymptoms] = useState([]);  // สร้าง state สำหรับอาการที่กรองแล้ว
+  const [searchQuery, setSearchQuery] = useState("");  // สร้าง state สำหรับการค้นหา
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [diseases, setDiseases] = useState([]);
   const [isEvaluated, setIsEvaluated] = useState(false);
@@ -22,9 +25,10 @@ const DiseaseScreen = () => {
   const fetchSymptoms = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.50.72/dogcare/symptominfo.php"
+        "http://192.168.3.117/dogcare/symptominfo.php"
       );
       setSymptoms(response.data);
+      setFilteredSymptoms(response.data);  // ตั้งค่าเริ่มต้นเป็นอาการทั้งหมด
     } catch (error) {
       console.error("Error fetching symptoms:", error);
     }
@@ -33,6 +37,15 @@ const DiseaseScreen = () => {
   useEffect(() => {
     fetchSymptoms();
   }, []);
+
+  // ฟังก์ชันสำหรับการค้นหาอาการ
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    const filtered = symptoms.filter((symptom) =>
+      symptom.symptom_name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredSymptoms(filtered);
+  };
 
   const handleSelectSymptom = (symptom) => {
     setSelectedSymptoms((prevSelected) => {
@@ -52,7 +65,7 @@ const DiseaseScreen = () => {
       }
 
       const response = await axios.post(
-        "http://192.168.50.72/dogcare/riskdisease.php",
+        "http://192.168.3.117/dogcare/riskdisease.php",
         {
           symptoms: selectedSymptoms,
         }
@@ -65,14 +78,14 @@ const DiseaseScreen = () => {
           diseases:
             exactMatches.length > 0
               ? exactMatches
-              : ["ไม่พบโรคที่มีความเสี่ยงสูง"],
+              : ["ไม่พบโรคที่ตรงกับอาการ"],
         },
         {
           title: "โรคที่ใกล้เคียงกับอาการ :",
           diseases:
             partialMatches.length > 0
               ? partialMatches
-              : ["ไม่พบโรคที่มีความเสี่ยงต่ำ"],
+              : ["ไม่พบโรคที่ใกล้เคียงกับอาการ"],
         },
       ]);
       setIsEvaluated(true);
@@ -102,8 +115,8 @@ const DiseaseScreen = () => {
 
   const renderDiseaseItem = (disease, index) => {
     const isDisabled =
-      disease === "ไม่พบโรคที่มีความเสี่ยงสูง" ||
-      disease === "ไม่พบโรคที่มีความเสี่ยงต่ำ";
+      disease === "ไม่พบโรคที่ตรงกับอาการ" ||
+      disease === "ไม่พบโรคที่ใกล้เคียงกับอาการ";
   
     return (
       <TouchableOpacity
@@ -121,7 +134,7 @@ const DiseaseScreen = () => {
 
   const handleSendDisease = async (disease) => {
     try {
-      const response = await axios.get('http://192.168.50.72/dogcare/diseases.php', { params: { disease } });
+      const response = await axios.get('http://192.168.3.117/dogcare/diseases.php', { params: { disease } });
       if (Array.isArray(response.data) && response.data.length > 0) {
         setSelectedDiseaseInfo(response.data[0]);
       } else {
@@ -150,8 +163,19 @@ const DiseaseScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.texttitle}>กรุณาระบุอาการของสุนัข</Text>
+      <Text style={styles.texttitle}>(เลือกได้หลายอาการ) </Text>
+
+      {/* ช่องค้นหาอาการ */}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="ค้นหาอาการ"
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+
       <FlatList
-        data={symptoms}
+        data={filteredSymptoms}  // ใช้อาการที่ถูกกรองแล้ว
         keyExtractor={(item) => item.symptom_id.toString()}
         renderItem={renderItem}
         numColumns={3}
@@ -163,7 +187,7 @@ const DiseaseScreen = () => {
         disabled={selectedSymptoms.length === 0}
       >
         <Text style={styles.evaluateButtonText}>
-          {isEvaluated ? "เริ่มใหม่" : "ประเมินโรค"}
+          {isEvaluated ? "เริ่มใหม่" : "ค้นหาโรคจากอาการ"}
         </Text>
       </TouchableOpacity>
 
@@ -197,9 +221,9 @@ const DiseaseScreen = () => {
                   {selectedDiseaseInfo.diseases_name || "ไม่มีข้อมูล"}
                 </Text>
                 <Text style={styles.modalSectionTitle}>อาการ:</Text>
-                <Text>{formatTextWithNewLine(selectedDiseaseInfo.symptom) || "ไม่มีข้อมูล"}</Text>
+                <Text style={styles.modalSectionText}>{formatTextWithNewLine(selectedDiseaseInfo.symptom) || "ไม่มีข้อมูล"}</Text>
                 <Text style={styles.modalSectionTitle}>การรักษา:</Text>
-                <Text>{formatTextWithNewLine(selectedDiseaseInfo.treat) || "ไม่มีข้อมูล"}</Text>
+                <Text style={styles.modalSectionText}>{formatTextWithNewLine(selectedDiseaseInfo.treat) || "ไม่มีข้อมูล"}</Text>
               </ScrollView>
             ) : (
               <Text>กำลังโหลดข้อมูล...</Text>
@@ -264,16 +288,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#555",
   },
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  disabledText: {
+    color: "#999",
+  },
   evaluateButton: {
     backgroundColor: "#FF9090",
-    padding: 15,
+    padding: 12,
     borderRadius: 5,
     alignItems: "center",
-    marginVertical: 10,
+    marginVertical: 0,
   },
   evaluateButtonText: {
     color: "#fff",
     fontSize: 16,
+  },
+  texttitle: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
   modalContainer: {
     flex: 1,
@@ -282,11 +326,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: 350,
+    width: "80%",
+    backgroundColor: "#fff",
     padding: 20,
-    backgroundColor: "white",
     borderRadius: 10,
-    position: "relative",
+    alignItems: "center",
   },
   closeButton: {
     position: "absolute",
@@ -294,21 +338,21 @@ const styles = StyleSheet.create({
     right: 10,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 1,
     textAlign: "center",
+    color: "blue",
   },
   modalSectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginTop: 15,
+    marginTop: 1,
+    color: "blue",
   },
-  disabledButton: {
-    backgroundColor: "#e0e0e0", // สีปุ่มเมื่อกดไม่ได้
-  },
-  disabledText: {
-    color: "#a0a0a0", // สีข้อความเมื่อกดไม่ได้
+  modalSectionText: {
+    fontSize: 16,
+    marginBottom: 1,
   },
 });
 

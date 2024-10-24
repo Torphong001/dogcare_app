@@ -58,7 +58,7 @@ const MyPetInfo = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://192.168.50.72/dogcare/getbreedinfo.php",
+        "http://192.168.3.117/dogcare/getbreedinfo.php",
         { breed_id: pet.breed_id }
       );
       setBreedInfo(response.data);
@@ -120,7 +120,7 @@ const MyPetInfo = ({ route, navigation }) => {
     }
     console.log(formData);
       const response = await axios.post(
-        "http://192.168.50.72/dogcare/editpetinfo.php",
+        "http://192.168.3.117/dogcare/editpetinfo.php",
         formData,
         {
           headers: {
@@ -132,7 +132,7 @@ const MyPetInfo = ({ route, navigation }) => {
       if (response.data.success) {
         showDialog("แก้ไขข้อมูลสำเร็จ");
         setIsEditing(false);
-        const updatedPetResponse = await axios.get(`http://192.168.50.72/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
+        const updatedPetResponse = await axios.get(`http://192.168.3.117/dogcare/getpetupdate.php?pet_id=${pet.pet_id}`);
         setPetinfo(updatedPetResponse.data);
       } else {
         showDialog("แก้ไขข้อมูลผิดพลาด");
@@ -155,7 +155,7 @@ const MyPetInfo = ({ route, navigation }) => {
           onPress: async () => {
             try {
               const response = await axios.post(
-                "http://192.168.50.72/dogcare/deletepet.php",
+                "http://192.168.3.117/dogcare/deletepet.php",
                 { pet_id: pet.pet_id }
               );
               if (response.data.success) {
@@ -213,15 +213,15 @@ const MyPetInfo = ({ route, navigation }) => {
 
   const pickImage  = () => {
     Alert.alert(
-      "เลือกรูปภาพ",
-      "เลือกแหล่งที่มาของรูปภาพ",
+      "เลือกตัวเลือก",
+      "คุณต้องการใช้ภาพจากกล้องหรือคลัง?",
       [
         {
-          text: "ถ่ายรูปใหม่",
+          text: "ถ่ายรูป",
           onPress: takePhotoWithCamera,
         },
         {
-          text: "เลือกรูปคลัง",
+          text: "เลือกรูปจากคลัง",
           onPress: pickImageFromGallery,
         },
         {
@@ -256,7 +256,7 @@ const MyPetInfo = ({ route, navigation }) => {
           ) : (
             pet.pet_pic ? (
               <Image
-                source={{ uri: `http://192.168.50.72/dogcare/uploads/${petinfo.pet_pic}` }}
+                source={{ uri: `http://192.168.3.117/dogcare/uploads/${petinfo.pet_pic}` }}
                 style={[styles.petImage, isEditing && styles.imageEditing]}
               />
             ) : (
@@ -459,7 +459,7 @@ const MyPetInfo = ({ route, navigation }) => {
                 <View style={styles.modalHeader}>
                   <Image
                     source={{
-                      uri: `http://192.168.50.72/dogcare/uploads/${breedInfo.picture}`,
+                      uri: `http://192.168.3.117/dogcare/uploads/${breedInfo.picture}`,
                     }}
                     style={styles.modalImage}
                   />
@@ -488,17 +488,16 @@ const MyPetInfo = ({ route, navigation }) => {
                       <>
                         {breedInfo.picturedetail
                           .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 0 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
+                          .map((url, index) =>
+                            index === 0 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
                           )}
                       </>
                     )}
@@ -513,17 +512,16 @@ const MyPetInfo = ({ route, navigation }) => {
                       <>
                         {breedInfo.picturedetail
                           .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 1 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
+                          .map((url, index) =>
+                            index === 1 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
                           )}
                       </>
                     )}
@@ -533,17 +531,16 @@ const MyPetInfo = ({ route, navigation }) => {
                       <>
                         {breedInfo.picturedetail
                           .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 2 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
+                          .map((url, index) =>
+                            index === 2 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
                           )}
                       </>
                     )}
@@ -559,17 +556,16 @@ const MyPetInfo = ({ route, navigation }) => {
                       <>
                         {breedInfo.picturedetail
                           .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 3 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
+                          .map((url, index) =>
+                            index === 3 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
                           )}
                       </>
                     )}
@@ -758,9 +754,10 @@ const styles = StyleSheet.create({
   modalBreedName: {
     fontSize: 22,
     fontWeight: "bold",
+    color: "blue",
   },
   modalRegion: {
-    fontSize: 18,
+    fontSize: 15,
     color: "gray",
   },
   modalText: {

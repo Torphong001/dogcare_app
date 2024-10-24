@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button } from '@mui/material';
+import { Modal, Box, TextField, Button, Typography } from '@mui/material';
 import axios from 'axios';
 
 function EditSymptomModal({ open, onClose, symptomData, onSymptomUpdated }) {
@@ -51,11 +51,13 @@ function EditSymptomModal({ open, onClose, symptomData, onSymptomUpdated }) {
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
         width: 500, bgcolor: 'background.paper', boxShadow: 24, p: 4
       }}>
-        <h2>แก้ไขอาการ</h2>
+        <Typography variant="h6" sx={{  fontWeight: 'bold', textAlign: 'center', color: '#000000' }}>
+          แก้ไขข้อมูลอาการ
+        </Typography>
 
         <TextField
           fullWidth
-          label="symptom Name"
+          label="ชื่ออาการ"
           name="symptom_name"
           value={formData.symptom_name}
           onChange={handleChange}
@@ -64,7 +66,7 @@ function EditSymptomModal({ open, onClose, symptomData, onSymptomUpdated }) {
         />
 
         <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-          Save
+          บันทึก
         </Button>
       </Box>
     </Modal>

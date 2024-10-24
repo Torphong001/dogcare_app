@@ -23,7 +23,7 @@ const BreedScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current; // Animation value for modal fade in/out
 
   useEffect(() => {
-    fetch("http://192.168.50.72/dogcare/breedinfo.php")
+    fetch("http://192.168.3.117/dogcare/breedinfo.php")
       .then((response) => response.json())
       .then((data) => {
         setBreeds(data);
@@ -71,7 +71,7 @@ const BreedScreen = () => {
       <View style={styles.card}>
         <Image
           source={{
-            uri: `http://192.168.50.72/dogcare/uploads/${item.picture}`,
+            uri: `http://192.168.3.117/dogcare/uploads/${item.picture}`,
           }}
           style={styles.image}
         />
@@ -102,13 +102,13 @@ const BreedScreen = () => {
         onChangeText={handleSearch}
       />
       <FlatList
-  data={filteredBreeds}
-  renderItem={renderBreed}
-  keyExtractor={(item) => item.breed_id.toString()}
-  ListEmptyComponent={
-    <Text style={styles.noResultsText}>ไม่พบข้อมูลสายพันธุ์</Text>
-  }
-/>
+        data={filteredBreeds}
+        renderItem={renderBreed}
+        keyExtractor={(item) => item.breed_id.toString()}
+        ListEmptyComponent={
+          <Text style={styles.noResultsText}>ไม่พบข้อมูลสายพันธุ์</Text>
+        }
+      />
 
       {selectedBreed && (
         <Modal
@@ -131,7 +131,7 @@ const BreedScreen = () => {
                 <View style={styles.modalHeader}>
                   <Image
                     source={{
-                      uri: `http://192.168.50.72/dogcare/uploads/${selectedBreed.picture}`,
+                      uri: `http://192.168.3.117/dogcare/uploads/${selectedBreed.picture}`,
                     }}
                     style={styles.modalImage}
                   />
@@ -160,17 +160,16 @@ const BreedScreen = () => {
                       <>
                         {selectedBreed.picturedetail
                           .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 0 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
+                          .map((url, index) =>
+                            index === 0 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
                           )}
                       </>
                     )}
@@ -182,8 +181,42 @@ const BreedScreen = () => {
                   <Text style={styles.modalBreedName}>
                     ลักษณะนิสัยของสุนัขพันธุ์ {selectedBreed.breed_name}
                   </Text>
+                  {selectedBreed.picturedetail && (
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 1 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>{selectedBreed.charac}</Text>
                   <Text style={styles.modalBreedName}>ข้อควรระวัง</Text>
+                  {selectedBreed.picturedetail && (
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 2 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>
                     {formatTextWithNewLine(selectedBreed.problem)}
                   </Text>
@@ -195,23 +228,21 @@ const BreedScreen = () => {
                     ประวัติความเป็นมาของสุนัขพันธุ์
                   </Text>
                   {selectedBreed.picturedetail && (
-                      <>
-                        {selectedBreed.picturedetail
-                          .split("|")
-                          .map(
-                            (url, index) =>
-                              index === 1 && (
-                                <Image
-                                  key={index}
-                                  source={{
-                                    uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                                  }}
-                                  style={styles.modalImagedetail}
-                                />
-                              )
-                          )}
-                      </>
-                    )}
+                    <>
+                      {selectedBreed.picturedetail.split("|").map(
+                        (url, index) =>
+                          index === 3 && (
+                            <Image
+                              key={index}
+                              source={{
+                                uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                              }}
+                              style={styles.modalImagedetail}
+                            />
+                          )
+                      )}
+                    </>
+                  )}
                   <Text style={styles.modalText}>{selectedBreed.record}</Text>
                 </View>
               </ScrollView>
@@ -315,6 +346,7 @@ const styles = StyleSheet.create({
   modalBreedName: {
     fontSize: 22,
     fontWeight: "bold",
+    color: "blue",
   },
   modalRegion: {
     fontSize: 18,

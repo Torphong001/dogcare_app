@@ -20,6 +20,10 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Select,
+  MenuItem,
+  Snackbar, 
+  Alert,
 } from '@mui/material';
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +31,9 @@ import EditDiseasesModal from './editdiseases';  // Import your modal
 
 function Diseases() {
   const [diseases, setDiseases] = useState([]);
+  const [symptoms, setSymptoms] = useState([]);  // State for symptoms from API
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSymptom, setSelectedSymptom] = useState('');
   const [error, setError] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);  // State for Edit Modal
@@ -35,6 +42,8 @@ function Diseases() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8); 
   const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const truncateText = (text, maxLength = 50) => {
     return text && text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
@@ -42,6 +51,7 @@ function Diseases() {
 
   useEffect(() => {
     fetchDiseases();
+    fetchSymptoms();  // Fetch symptoms data on component mount
   }, []);
 
   const fetchDiseases = () => {
@@ -55,6 +65,19 @@ function Diseases() {
       })
       .catch(() => {
         setError('Network error');
+      });
+  };
+  const fetchSymptoms = () => {
+    axios.get('http://localhost/dogcare/admin/symptom.php')
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          setSymptoms(response.data);  // Set the symptoms data
+        } else {
+          setError('Invalid data format from symptom API');
+        }
+      })
+      .catch(() => {
+        setError('Error fetching symptoms');
       });
   };
 
@@ -75,6 +98,8 @@ function Diseases() {
     .then((response) => {
       if (response.data.status === 'success') {
         fetchDiseases();
+        setSnackbarMessage('ลบข้อมูลโรคสำเร็จ!');
+        setSnackbarOpen(true);  // เปิด Snackbar เพื่อแสดงผลการทำงาน
       } else {
         setError(response.data.message);
       }
@@ -92,7 +117,11 @@ function Diseases() {
     setDeleteDialogOpen(false);
     setDiseaseToDelete(null);
   };
-
+  const handleDiseaseUpdated = () => {
+    fetchDiseases();
+    setSnackbarMessage('อัพเดทข้อมูลสำเร็จ!');
+    setSnackbarOpen(true);
+  };
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
     setDiseaseToEdit(null);
@@ -106,7 +135,11 @@ function Diseases() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
+  const filteredDiseases = diseases.filter((disease) => {
+    const matchesSearch = disease.diseases_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSymptom = selectedSymptom === '' || disease.symptom.includes(selectedSymptom);
+    return matchesSearch && matchesSymptom;
+  });
   if (error) {
     return <Typography color="error">Error: {error}</Typography>;
   }
@@ -118,21 +151,36 @@ function Diseases() {
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <TextField
-          label="ค้นหาโรค"
-          variant="outlined"
-          // value={searchQuery}
-          // onChange={handleSearchChange}
-          sx={{ width: 710, borderRadius: 1 }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton>
-                  <SearchIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+            label="ค้นหาโรค"
+            variant="outlined"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ width: 700, borderRadius: 1 }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton>
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Filter by symptom */}
+          <Select
+          value={selectedSymptom}
+          onChange={(e) => setSelectedSymptom(e.target.value)}
+          displayEmpty
+          sx={{ width: "20%", backgroundColor: "#FFF" }}
+            >
+            <MenuItem value=""><em>กรองข้อมูลอาการ</em></MenuItem>
+            {symptoms.map((symptom) => (
+              <MenuItem key={symptom.symptom_name} value={symptom.symptom_name}>
+                {symptom.symptom_name}
+              </MenuItem>
+            ))}
+          </Select>
         <Button 
           variant="contained" 
           color="secondary" 
@@ -154,8 +202,8 @@ function Diseases() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {diseases.length > 0 ? (
-              diseases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((disease) => (
+          {filteredDiseases.length > 0 ? (
+              filteredDiseases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((disease) => (
                 <TableRow key={disease.diseases_id}>
                   <TableCell>{disease.diseases_name}</TableCell>
                   <TableCell>{truncateText(disease.symptom)}</TableCell>
@@ -192,7 +240,7 @@ function Diseases() {
         <TablePagination
           rowsPerPageOptions={[8]}
           component="div"
-          count={diseases.length}
+          count={filteredDiseases.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -205,18 +253,18 @@ function Diseases() {
         open={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
       >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>ยืนยันการลบ</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this disease?
+            คุณต้องการลบโรค "{diseaseToDelete?.diseases_name}" หรือไม่?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            ยกเลิก
           </Button>
           <Button onClick={confirmDelete} color="secondary">
-            Delete
+            ลบ
           </Button>
         </DialogActions>
       </Dialog>
@@ -227,9 +275,19 @@ function Diseases() {
           open={editModalOpen}
           onClose={handleCloseEditModal}
           diseaseData={diseaseToEdit}
-          onDiseaseUpdated={fetchDiseases}  // Refresh diseases after update
+          onDiseaseUpdated={handleDiseaseUpdated}  // Refresh diseases after update
         />
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

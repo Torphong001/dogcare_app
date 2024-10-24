@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button, CircularProgress } from '@mui/material';
+import { Modal, Box, TextField, Button, CircularProgress, Typography, } from '@mui/material';
 import axios from 'axios';
 
 function EditDiseasesModal({ open, onClose, diseaseData, onDiseaseUpdated }) {
@@ -87,7 +87,9 @@ function EditDiseasesModal({ open, onClose, diseaseData, onDiseaseUpdated }) {
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
         width: 500, bgcolor: 'background.paper', boxShadow: 24, p: 4
       }}>
-        <h2>Edit Disease</h2>
+        <Typography variant="h6" sx={{  fontWeight: 'bold', textAlign: 'center', color: '#000000' }}>
+          แก้ไขข้อมูลโรค
+        </Typography>
 
         <TextField
           fullWidth
@@ -127,7 +129,7 @@ function EditDiseasesModal({ open, onClose, diseaseData, onDiseaseUpdated }) {
         />
 
         <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-          Save
+          บันทึก
         </Button>
       </Box>
     </Modal>

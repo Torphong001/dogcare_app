@@ -5,8 +5,11 @@ import {
   Button, 
   Typography, 
   Paper, 
-  Container 
+  Container,
+  Snackbar, 
+  Alert,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 function AddSymptom() {
   const [symptomData, setSymptomData] = useState({
@@ -14,6 +17,8 @@ function AddSymptom() {
   });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setSymptomData({
@@ -27,11 +32,15 @@ function AddSymptom() {
     axios.post('http://localhost/dogcare/admin/addsymptom.php', symptomData)
       .then(response => {
         if (response.data.success) {
-          setSuccessMessage('Disease added successfully!');
+          setSuccessMessage('เพิ่มข้อมูลอาการสำเร็จ!');
+          setSnackbarOpen(true); // เปิด Snackbar เมื่อสำเร็จ
           setError('');
           setSymptomData({
             symptom_name: '',
           });
+          setTimeout(() => {
+            navigate('/Symptom');
+          }, 2000); 
         } else {
           setError(response.data.message || 'An error occurred.');
         }
@@ -41,7 +50,9 @@ function AddSymptom() {
         setError('An error occurred while adding the disease.');
       });
   };
-
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
@@ -64,11 +75,7 @@ function AddSymptom() {
               {error}
             </Typography>
           )}
-          {successMessage && (
-            <Typography color="primary" variant="body2">
-              {successMessage}
-            </Typography>
-          )}
+          
           <Button 
             type="submit" 
             variant="contained" 
@@ -80,6 +87,16 @@ function AddSymptom() {
           </Button>
         </form>
       </Paper>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

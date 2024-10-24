@@ -21,7 +21,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
   const [dialogMessage, setDialogMessage] = useState('');
 
   useEffect(() => {
-    fetch('http://192.168.50.72/dogcare/breedinfo.php')
+    fetch('http://192.168.3.117/dogcare/breedinfo.php')
       .then(response => response.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -76,7 +76,7 @@ const AddPetScreen = ({ route, navigation, userToken }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.50.72/dogcare/addpet.php', {
+      const response = await fetch('http://192.168.3.117/dogcare/addpet.php', {
         method: 'POST',
         body: formData,
       });

@@ -3,8 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
-  Button, Typography, Avatar, CircularProgress, Alert, Box, Modal, TextField, Snackbar, Alert as MuiAlert
+  Button, Typography, Avatar, CircularProgress, Alert, Box, Modal, TextField, Snackbar, Alert as MuiAlert, IconButton, InputAdornment
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material'; // สำหรับไอคอนแสดง/ซ่อนรหัสผ่าน
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -15,6 +16,7 @@ const User = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null); // State for storing image preview
+  const [showPassword, setShowPassword] = useState(false); // state สำหรับการแสดงรหัสผ่าน
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -28,29 +30,34 @@ const User = () => {
     setOpen(false);
     setSelectedFile(null);
     setImagePreview(null); // Reset image preview when closing modal
+    setShowPassword(false);
   };
-
+  const fetchUserData = (userId) => {
+    axios.get(`http://localhost/dogcare/admin/getuser.php?user_id=${userId}`)
+      .then((response) => {
+        if (response.data.success !== false) {
+          setUser(response.data);
+          setEditData(response.data);
+          setImagePreview(response.data.picture ? `http://localhost/dogcare/uploads/${response.data.picture}` : null);
+        } else {
+          setError(response.data.message || 'Error fetching user data');
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching the user:', error);
+        setError('Network error');
+      });
+  };
+  
   useEffect(() => {
     const userId = localStorage.getItem('userId');
     if (userId) {
-      axios.get(`http://localhost/dogcare/admin/getuser.php?user_id=${userId}`)
-        .then((response) => {
-          if (response.data.success !== false) {
-            setUser(response.data);
-            setEditData(response.data);
-            setImagePreview(response.data.picture ? `http://localhost/dogcare/uploads/${response.data.picture}` : null);
-          } else {
-            setError(response.data.message || 'Error fetching user data');
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching the user:', error);
-          setError('Network error');
-        });
+      fetchUserData(userId); // เรียกใช้ฟังก์ชัน fetchUserData
     } else {
       setError('No user ID found in localStorage');
     }
   }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -92,6 +99,8 @@ const User = () => {
         }));
         setSnackbarMessage('อัพเดทข้อมูลสำเร็จ!');
         setSnackbarOpen(true);
+        fetchUserData(userId);
+        setShowPassword(false);
         handleClose();
       } else {
         setSnackbarMessage(response.data.message || 'อัพเดทข้อมูลไม่สำเร็จ!');
@@ -107,6 +116,10 @@ const User = () => {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   if (error) {
@@ -152,7 +165,13 @@ const User = () => {
               <TableCell><Typography variant="subtitle1">ไอดีไลน์</Typography></TableCell>
               <TableCell>{user.line_id}</TableCell>
             </TableRow>
-            
+            <TableRow>
+  <TableCell><Typography variant="subtitle1">รหัสผ่าน</Typography></TableCell>
+  <TableCell>
+    {'*'.repeat(user.password.length)}  {/* แสดงเครื่องหมาย * ตามความยาวของรหัสผ่าน */}
+  </TableCell>
+</TableRow>
+
           </TableBody>
         </Table>
       </TableContainer>
@@ -162,17 +181,39 @@ const User = () => {
       </Button>
 
       <Button variant="contained" color="error" onClick={handleLogout} sx={{ display: 'block', margin: 'auto', width: '100%' }}>
-        Logout
+        ออกจากระบบ
       </Button>
 
       <Modal open={open} onClose={handleClose}>
         <Paper sx={{ padding: 4, maxWidth: 500, margin: 'auto', mt: 5 }}>
-          <Typography variant="h5" gutterBottom>แก้ไขข้อมูลผู้ใช้</Typography>
-          <Avatar 
-            src={imagePreview || (user.picture ? `http://localhost/dogcare/uploads/${user.picture}` : 'https://via.placeholder.com/150')}
-            alt={user.username} 
-            sx={{ width: 100, height: 100, mb: 3 }} 
-          />
+          <Typography variant="h5" gutterBottom>แก้ไขข้อมูล</Typography>
+          
+          <Box display="flex" justifyContent="center" mb={2}>
+            <label style={{ cursor: 'pointer' }}>
+              <img
+                src={imagePreview || `http://localhost/dogcare/uploads/${user.picture}`}
+                alt={user.username}
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  marginBottom: '16px',
+                  transition: 'filter 0.3s',
+                  filter: 'brightness(1)',
+                }}
+                onMouseEnter={(e) => (e.target.style.filter = 'brightness(0.5)')}
+                onMouseLeave={(e) => (e.target.style.filter = 'brightness(1)')}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </Box>
+
           <TextField 
             label="ชื่อ" 
             fullWidth 
@@ -205,24 +246,32 @@ const User = () => {
             value={editData.line_id || ''} 
             onChange={handleChange}
           />
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleFileChange} 
-            style={{ marginTop: '16px' }} 
+          <TextField 
+            label="รหัสผ่าน" 
+            fullWidth 
+            margin="normal" 
+            name="password" 
+            type={showPassword ? 'text' : 'password'}
+            value={editData.password || ''}
+            onChange={handleChange}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={togglePasswordVisibility}>
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
-          <Button variant="contained" color="primary" onClick={handleUpdateUser} sx={{ mt: 2 }}>
-            บันทึก
+
+          <Button variant="contained" color="primary" onClick={handleUpdateUser} sx={{ mt: 3 }}>
+            บันทึกข้อมูล
           </Button>
         </Paper>
       </Modal>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
+      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}> 
         <MuiAlert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
           {snackbarMessage}
         </MuiAlert>

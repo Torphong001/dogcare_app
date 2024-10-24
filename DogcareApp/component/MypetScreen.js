@@ -12,7 +12,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('http://192.168.50.72/dogcare/getpets.php', {
+        const response = await axios.get('http://192.168.3.117/dogcare/getpets.php', {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
@@ -46,7 +46,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
       onPress={() => navigation.navigate('MyPetInfo', { pet: item })}
     >
       {item.pet_pic ? (
-        <Image source={{ uri: `http://192.168.50.72/dogcare/uploads/${item.pet_pic}` }} style={styles.image} />
+        <Image source={{ uri: `http://192.168.3.117/dogcare/uploads/${item.pet_pic}` }} style={styles.image} />
       ) : (
         <FontAwesome name="user" size={100} color="gray" />
       )}
@@ -61,7 +61,7 @@ const MypetScreen = ({ navigation, userToken, notifications }) => {
     if (hasNotifications) {
       try {
         const updatePromises = notifications.map(async (notification) => {
-          return await axios.post('http://192.168.50.72/dogcare/updatenoti.php', {
+          return await axios.post('http://192.168.3.117/dogcare/updatenoti.php', {
             noti_id: notification.noti_id,
             noti_status: 'R',
           });

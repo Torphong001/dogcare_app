@@ -83,7 +83,7 @@ function AddBreed() {
 
         setTimeout(() => {
           navigate('/Breed');
-        }, 3000);
+        }, 2000);
       } else {
         setError(response.data.message || 'เกิดข้อผิดพลาด.');
       }
@@ -242,11 +242,6 @@ function AddBreed() {
           {error && (
             <Typography color="error" variant="body2">
               {error}
-            </Typography>
-          )}
-          {successMessage && (
-            <Typography color="primary" variant="body2">
-              {successMessage}
             </Typography>
           )}
           <Button 

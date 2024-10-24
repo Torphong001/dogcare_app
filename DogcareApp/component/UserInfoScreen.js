@@ -29,7 +29,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         setToken(storedToken);
 
         if (storedToken) {
-          const response = await axios.get('http://192.168.50.72/dogcare/userinfo.php', {
+          const response = await axios.get('http://192.168.3.117/dogcare/userinfo.php', {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
@@ -43,6 +43,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
               lastName: response.data.lastname,
               tel: response.data.tel,
               line_id: response.data.line_id,
+              password: response.data.password,
               picture: response.data.picture,
             });
             setOriginalUserInfo({
@@ -50,6 +51,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
               lastName: response.data.lastname,
               tel: response.data.tel,
               line_id: response.data.line_id,
+              password: response.data.password,
               picture: response.data.picture,
             });
           }
@@ -80,15 +82,17 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
         formData.append('lastName', userInfo.lastName);
         formData.append('tel', userInfo.tel);
         formData.append('line_id', userInfo.line_id);
-  
-        formData.append('picture', {
-          uri: selectedImage.uri,
-          name: selectedImage.fileName,
-          type: selectedImage.mimeType,
-        });
+        formData.append('password', userInfo.password);
+        if (selectedImage) {
+          formData.append('picture', {
+            uri: selectedImage.uri,
+            name: selectedImage.fileName,
+            type: selectedImage.mimeType,
+          });
+        }
         console.log(selectedImage);
         const response = await axios.post(
-          'http://192.168.50.72/dogcare/edituserinfo.php',
+          'http://192.168.3.117/dogcare/edituserinfo.php',
           formData,
           {
             headers: {
@@ -161,15 +165,15 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
 
   const pickImage  = () => {
     Alert.alert(
-      "เลือกรูปภาพ",
-      "เลือกแหล่งที่มาของรูปภาพ",
+      "เลือกตัวเลือก",
+      "คุณต้องการใช้ภาพจากกล้องหรือคลัง?",
       [
         {
-          text: "ถ่ายรูปใหม่",
+          text: "ถ่ายรูป",
           onPress: takePhotoWithCamera,
         },
         {
-          text: "เลือกรูปคลัง",
+          text: "เลือกรูปจากคลัง",
           onPress: pickImageFromGallery,
         },
         {
@@ -204,7 +208,7 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
           ) : (
             userInfo.picture ? (
               <Image
-                source={{ uri: `http://192.168.50.72/dogcare/uploads/${userInfo.picture}` }}
+                source={{ uri: `http://192.168.3.117/dogcare/uploads/${userInfo.picture}` }}
                 style={[styles.image, isEditing && styles.imageEditing]}
               />
             ) : (
@@ -250,6 +254,14 @@ const UserInfoScreen = ({ navigation, setUserToken }) => {
             editable={isEditing}
             placeholder="ไอดีไลน์"
             onChangeText={(text) => setUserInfo({ ...userInfo, line_id: text })}
+          />
+          <Text style={styles.label}>รหัสผ่าน</Text>
+          <TextInput
+            style={[styles.input, isEditing && styles.inputEditing]}
+            value={userInfo.password}
+            editable={isEditing}
+            placeholder="รหัสผ่าน"
+            onChangeText={(text) => setUserInfo({ ...userInfo, password: text })}
           />
         </View>
 
@@ -303,9 +315,9 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: '#FF9090',
-    padding: 15,
+    padding: 10,
     borderRadius: 20,
-    marginTop: 20,
+    marginTop: 5,
     width: '100%',
   },
   logoutButtonText: {
@@ -334,10 +346,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   image: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     borderRadius: 75,
-    marginBottom: 20,
+    marginBottom: 10,
     borderWidth: 2,
     borderColor: '#FF9090',
   },

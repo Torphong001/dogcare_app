@@ -7,8 +7,11 @@ import {
   Paper, 
   Container, 
   Box, 
-  CircularProgress 
+  CircularProgress,
+  Snackbar, 
+  Alert,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 function AddDiseases() {
   const [diseaseData, setDiseaseData] = useState({
@@ -19,8 +22,10 @@ function AddDiseases() {
   const [symptomOptions, setSymptomOptions] = useState([]); // ตัวเลือกอาการที่ดึงจาก API
   const [selectedSymptoms, setSelectedSymptoms] = useState([]); // เก็บอาการที่ผู้ใช้เลือก
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(true); // สำหรับสถานะการโหลดข้อมูลอาการ
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
   // ดึงข้อมูลอาการจาก API
   useEffect(() => {
@@ -62,14 +67,17 @@ function AddDiseases() {
     axios.post('http://localhost/dogcare/admin/adddiseases.php', diseaseData)
       .then(response => {
         if (response.data.success) {
-          setSuccessMessage('Disease added successfully!');
-          setError('');
+          setSuccessMessage('เพิ่มข้อมูลโรคสำเร็จ!');
+          setSnackbarOpen(true); // เปิด Snackbar เมื่อสำเร็จ
           setDiseaseData({
             diseases_name: '',
             symptom: '',
             treat: ''
           });
           setSelectedSymptoms([]); // เคลียร์อาการที่เลือก
+          setTimeout(() => {
+            navigate('/Diseases');
+          }, 2000); // รอ 2 วินาทีเพื่อกลับไปที่หน้า Diseases
         } else {
           setError(response.data.message || 'An error occurred.');
         }
@@ -78,8 +86,10 @@ function AddDiseases() {
         console.error('There was an error!', error);
         setError('An error occurred while adding the disease.');
       });
+  };  
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
-
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
@@ -133,11 +143,6 @@ function AddDiseases() {
               {error}
             </Typography>
           )}
-          {successMessage && (
-            <Typography color="primary" variant="body2">
-              {successMessage}
-            </Typography>
-          )}
           <Button 
             type="submit" 
             variant="contained" 
@@ -149,6 +154,16 @@ function AddDiseases() {
           </Button>
         </form>
       </Paper>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

@@ -46,30 +46,29 @@ const NotiPet = ({ route }) => {
   ];
 
   useEffect(() => {
-    const fetchPetNotification = async () => {
-      try {
-        const response = await axios.post(
-          "http://192.168.50.72/dogcare/notipet.php",
-          { pet_id }
-        );
-        if (response.data.success) {
-          setNotifications(response.data.notifications);
-        } else {
-          setNotifications([]);
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching pet notifications:",
-          error.response || error.message
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    
     fetchPetNotification();
   }, [pet_id]);
-
+  const fetchPetNotification = async () => {
+    try {
+      const response = await axios.post(
+        "http://192.168.3.117/dogcare/notipet.php",
+        { pet_id }
+      );
+      if (response.data.success) {
+        setNotifications(response.data.notifications);
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching pet notifications:",
+        error.response || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleCancel = () => {
     setModalVisible(false);
     setNotiName("");
@@ -102,7 +101,7 @@ const NotiPet = ({ route }) => {
     console.log(formattedTime, formattedDay, formattedDate);
     try {
       const response = await axios.post(
-        "http://192.168.50.72/dogcare/addnoti.php",
+        "http://192.168.3.117/dogcare/addnoti.php",
         {
           noti_name: notiName,
           noti_detail: notiDetail,
@@ -123,6 +122,7 @@ const NotiPet = ({ route }) => {
           },
         ]);
         showDialog("เพิ่มการแจ้งเตือนสําเร็จ");
+        fetchPetNotification();
       } else {
         showDialog("เพิ่มการแจ้งเตือนไม่สําเร็จ: ");
       }
@@ -154,7 +154,7 @@ const NotiPet = ({ route }) => {
           onPress: async () => {
             try {
               const response = await axios.post(
-                "http://192.168.50.72/dogcare/deletenoti.php",
+                "http://192.168.3.117/dogcare/deletenoti.php",
                 {
                   noti_id,
                 }
@@ -418,11 +418,11 @@ const NotiPet = ({ route }) => {
 
             <View style={styles.modalActions}>
               <Button
-                title="Save"
+                title="บันทึก"
                 onPress={handleAddNotification}
                 color="#FF9090"
               />
-              <Button title="Cancel" onPress={handleCancel} color={"red"} />
+              <Button title="ยกเลิก" onPress={handleCancel} color={"red"} />
             </View>
           </View>
         </View>

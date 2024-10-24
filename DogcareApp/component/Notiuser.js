@@ -57,8 +57,10 @@ const Notiuser = ({ notifications }) => {
         <Text style={styles.title}>ชื่อแจ้งเตือน: {item.noti_name}</Text>
         <Text style={styles.detail}>รหัสสัตว์เลี้ยง: {item.noti_pet_id}</Text>
         <Text style={styles.detail}>เวลา: {item.noti_time}</Text>
+        {item.noti_day !== null && ( // ไม่ทำอะไรกับ noti_date
         <Text style={styles.detail}>ทุกๆวัน: {formattedDays}</Text> 
-        {item.noti_date && ( // ไม่ทำอะไรกับ noti_date
+        )}
+        {item.noti_date !== null && ( // ไม่ทำอะไรกับ noti_date
           <Text style={styles.detail}>วันที่: {formatDate(item.noti_date)}</Text>
         )}
       </View>

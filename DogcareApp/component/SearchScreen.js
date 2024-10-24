@@ -42,7 +42,7 @@ const SearchScreen = () => {
 
     Alert.alert(
       "เลือกตัวเลือก",
-      "คุณต้องการทำอะไร?",
+      "คุณต้องการใช้ภาพจากกล้องหรือคลัง?",
       [
         {
           text: "ถ่ายรูป",
@@ -137,7 +137,7 @@ const SearchScreen = () => {
   const handleBreedDetails = async (breedname) => {
     try {
       const response = await axios.post(
-        "http://192.168.50.72/dogcare/getbreedpredic.php",
+        "http://192.168.3.117/dogcare/getbreedpredic.php",
         { breed_name: breedname }
       );
       const breedData = response.data;
@@ -171,7 +171,7 @@ const SearchScreen = () => {
           style={styles.detailButtonselect}
           activeOpacity={0.7} // ลดความเข้มของปุ่มเมื่อกด
         >
-          <Text style={styles.buttonText}>เลือกรูปภาพ</Text>
+          <Text style={styles.buttonText2}>ถ่ายภาพ/เลือกรูปภาพ</Text>
         </TouchableOpacity>
       )}
       {topBreeds.length > 0 && (
@@ -196,7 +196,7 @@ const SearchScreen = () => {
       {topBreeds.length > 0 && (
   <View style={styles.resultContainer}>
     {/* เช็คว่าเปอร์เซ็นต์ที่มากที่สุดเกิน 50% หรือไม่ */}
-    {parseFloat(topBreeds[0].percentage) < 50 ? (
+    {parseFloat(topBreeds[0].percentage) < 70 ? (
       <Text style={styles.noBreedText}>ไม่สามารถระบุสายพันธุ์ได้</Text>
     ) : (
       <>
@@ -258,7 +258,7 @@ const SearchScreen = () => {
               <View style={styles.modalHeader}>
                 <Image
                   source={{
-                    uri: `http://192.168.50.72/dogcare/uploads/${selectedBreed.picture}`,
+                    uri: `http://192.168.3.117/dogcare/uploads/${selectedBreed.picture}`,
                   }}
                   style={styles.modalImage}
                 />
@@ -282,21 +282,22 @@ const SearchScreen = () => {
                     ลักษณะของสุนัขพันธุ์:
                   </Text>
                   {selectedBreed.picturedetail && (
-                    <>
-                      {selectedBreed.picturedetail.split("|").map(
-                        (url, index) =>
-                          index === 0 && (
-                            <Image
-                              key={index}
-                              source={{
-                                uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                              }}
-                              style={styles.modalImagedetail}
-                            />
-                          )
-                      )}
-                    </>
-                  )}
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 0 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                   <Text style={styles.modalText}>
                     {formatTextWithNewLine(selectedBreed.nature)}
                   </Text>
@@ -304,10 +305,44 @@ const SearchScreen = () => {
                 <Text style={styles.modalBreedName}>
                   ลักษณะนิสัยของสุนัขพันธุ์ {selectedBreed.breed_name}
                 </Text>
+                {selectedBreed.picturedetail && (
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 1 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                 <Text style={styles.modalText}>
                   {formatTextWithNewLine(selectedBreed.charac)}
                 </Text>
                 <Text style={styles.modalBreedName}>ข้อควรระวัง</Text>
+                {selectedBreed.picturedetail && (
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 2 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                 <Text style={styles.modalText}>
                   {formatTextWithNewLine(selectedBreed.problem)}
                 </Text>
@@ -318,23 +353,25 @@ const SearchScreen = () => {
                 <Text style={styles.modalBreedName}>
                   ประวัติความเป็นมาของสุนัขพันธุ์
                 </Text>
+                {selectedBreed.picturedetail && (
+                      <>
+                        {selectedBreed.picturedetail
+                          .split("|")
+                          .map((url, index) =>
+                            index === 3 && url ? (
+                              <Image
+                                key={index}
+                                source={{
+                                  uri: `http://192.168.3.117/dogcare/uploads/${url}`,
+                                }}
+                                style={styles.modalImagedetail}
+                              />
+                            ) : null
+                          )}
+                      </>
+                    )}
                 <Text style={styles.modalText}>
-                  {selectedBreed.picturedetail && (
-                    <>
-                      {selectedBreed.picturedetail.split("|").map(
-                        (url, index) =>
-                          index === 1 && (
-                            <Image
-                              key={index}
-                              source={{
-                                uri: `http://192.168.50.72/dogcare/uploads/${url}`,
-                              }}
-                              style={styles.modalImagedetail}
-                            />
-                          )
-                      )}
-                    </>
-                  )}
+                  
                   {formatTextWithNewLine(selectedBreed.record)}
                 </Text>
               </View>
@@ -480,6 +517,7 @@ const styles = StyleSheet.create({
   modalBreedName: {
     fontSize: 22,
     fontWeight: "bold",
+    color: "blue",
   },
   modalRegion: {
     fontSize: 18,
@@ -526,6 +564,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginTop: 20,
+  },
+  buttonText: {
+    color: "black", // สีข้อความในปุ่ม
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+    width: "100%",
+  },
+  buttonText2: {
+    color: "black", // สีข้อความในปุ่ม
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+    width: "100%",
   },
 });
 
